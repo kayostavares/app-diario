@@ -1,0 +1,46 @@
+# Dependências (essencial ignorar)
+node_modules/
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+
+# Pastas de cache e compilação do Expo
+.expo/
+.expo-shared/
+dist/
+web-build/
+
+# Builds nativos (caso use expo run:android ou prebuild)
+android/
+ios/
+
+# Logs e arquivos locais do Metro Bundler
+*.log
+.metro-health-check*
+
+# Variáveis de ambiente e credenciais
+.env
+.env*.local
+*.jks
+*.p8
+*.p12
+*.key
+*.mobileprovision
+
+# Arquivos de contexto de IA / ferramentas locais (opcional, se não quiser versionar)
+AGENTS.md
+CLAUDE.md
+
+# Arquivos de sistema operacional
+.DS_Store
+.DS_Store?
+._*
+.Spotlight-V100
+.Trashes
+ehthumbs.db
+Thumbs.db
+
+# Configurações de IDEs
+.vscode/
+.idea/
+*.sw?
