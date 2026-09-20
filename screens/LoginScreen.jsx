@@ -1,6 +1,5 @@
 import React, { useState } from 'react';
 import {
-  SafeAreaView,
   View,
   Text,
   TextInput,
@@ -13,11 +12,20 @@ import {
   TouchableWithoutFeedback,
   Keyboard,
   StatusBar,
+  Image,
+  useWindowDimensions,
 } from 'react-native';
 
+import { SafeAreaView } from 'react-native-safe-area-context';
+
 const LoginScreen = ({ onLogin, onRegister, onForgotPassword }) => {
+  const { width, height } = useWindowDimensions();
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
+
+  // Calcula o tamanho da logo dinamicamente: 
+  // Entre 80px (telas bem pequenas) e 140px (telas grandes/tablets)
+  const logoSize = Math.min(Math.max(width * 0.28, 80), 140);
 
   const handleLogin = () => {
     Keyboard.dismiss();
@@ -41,12 +49,27 @@ const LoginScreen = ({ onLogin, onRegister, onForgotPassword }) => {
       >
         <TouchableWithoutFeedback onPress={Keyboard.dismiss}>
           <ScrollView
-            contentContainerStyle={styles.scrollContent}
+            contentContainerStyle={[
+              styles.scrollContent,
+              // Ajusta o preenchimento se a tela for menor
+              { minHeight: height - (StatusBar.currentHeight || 0) },
+            ]}
             showsVerticalScrollIndicator={false}
             keyboardShouldPersistTaps="handled"
           >
             <View style={styles.headerBox}>
-              <Text style={styles.title}>Diário de Campo</Text>
+              <Image
+                source={require('../assets/icon.png')}
+                style={{
+                  width: logoSize,
+                  height: logoSize,
+                  marginBottom: height < 650 ? 4 : 10,
+                }}
+                resizeMode="contain"
+              />
+              <Text style={[styles.title, { fontSize: width < 360 ? 22 : 26 }]}>
+                Diário de Campo
+              </Text>
               <Text style={styles.subtitle}>Entre na sua conta para continuar</Text>
             </View>
 
@@ -76,7 +99,7 @@ const LoginScreen = ({ onLogin, onRegister, onForgotPassword }) => {
                 <Text style={styles.forgotText}>Esqueceu a senha?</Text>
               </TouchableOpacity>
 
-              <TouchableOpacity style={styles.primaryButton} onPress={handleLogin}>
+              <TouchableOpacity style={styles.primaryButton} onPress={handleLogin} activeOpacity={0.8}>
                 <Text style={styles.primaryButtonText}>Entrar</Text>
               </TouchableOpacity>
 
@@ -105,15 +128,14 @@ const styles = StyleSheet.create({
   scrollContent: {
     flexGrow: 1,
     paddingHorizontal: 24,
-    paddingVertical: 30,
+    paddingVertical: 20,
     justifyContent: 'center',
   },
   headerBox: {
-    marginBottom: 24,
+    marginBottom: 18,
     alignItems: 'center',
   },
   title: {
-    fontSize: 28,
     fontWeight: '700',
     textAlign: 'center',
     color: '#1a1a1a',
@@ -121,7 +143,7 @@ const styles = StyleSheet.create({
   subtitle: {
     textAlign: 'center',
     color: '#666',
-    marginTop: 6,
+    marginTop: 4,
     fontSize: 14,
   },
   formCard: {

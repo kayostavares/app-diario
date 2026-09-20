@@ -1,5 +1,6 @@
 import React from 'react';
-import { SafeAreaView, ActivityIndicator, Text, StatusBar } from 'react-native';
+import { ActivityIndicator, Text, StatusBar } from 'react-native';
+import { SafeAreaView } from 'react-native-safe-area-context';
 import styles from '../styles/styles';
 
 const LoadingScreen = () => (
