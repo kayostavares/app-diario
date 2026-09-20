@@ -5,6 +5,7 @@ import styles from '../styles/styles';
 
 const EntryCard = ({
   item,
+  folderName = 'Geral',
   onToggle,
   onEdit,
   onRemove,
@@ -21,16 +22,21 @@ const EntryCard = ({
           {item.done && <Ionicons name="checkmark" size={16} color="#fff" />}
         </TouchableOpacity>
 
-        <Text style={[styles.cardTitle, item.done && styles.cardTitleDone]}>
-          {item.title}
-        </Text>
+        <View style={{ flex: 1 }}>
+          <Text style={[styles.cardTitle, item.done && styles.cardTitleDone]}>
+            {item.title}
+          </Text>
+          {/* Tag com o nome da Pasta */}
+          <View style={styles.folderBadge}>
+            <Ionicons name="folder" size={12} color="#2f6fed" />
+            <Text style={styles.folderBadgeText}>{folderName}</Text>
+          </View>
+        </View>
 
-        {/* Botão de Editar */}
         <TouchableOpacity onPress={() => onEdit(item)} style={styles.iconBtn}>
           <Ionicons name="pencil-outline" size={18} color="#2f6fed" />
         </TouchableOpacity>
 
-        {/* Botão de Excluir */}
         <TouchableOpacity onPress={() => onRemove(item.id)} style={styles.iconBtn}>
           <Ionicons name="trash-outline" size={18} color="#ff5252" />
         </TouchableOpacity>
@@ -49,7 +55,7 @@ const EntryCard = ({
         <TouchableOpacity style={styles.locationContainer} onPress={() => onOpenMap(item)}>
           <Ionicons name="location-sharp" size={16} color="#2f6fed" />
           <Text style={styles.coordsText} numberOfLines={1}>
-            {item.coords.address || `${item.coords.latitude.toFixed(4)}, ${item.coords.longitude.toFixed(4)}`}
+            {item.coords.address || `${item.coords.latitude?.toFixed(4)}, ${item.coords.longitude?.toFixed(4)}`}
           </Text>
         </TouchableOpacity>
       )}
