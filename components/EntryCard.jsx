@@ -3,7 +3,14 @@ import { View, Text, TouchableOpacity, Image } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import styles from '../styles/styles';
 
-const EntryCard = ({ item, onToggle, onRemove, onOpenMap, onPreviewPhoto }) => {
+const EntryCard = ({
+  item,
+  onToggle,
+  onEdit,
+  onRemove,
+  onOpenMap,
+  onPreviewPhoto,
+}) => {
   return (
     <View style={styles.card}>
       <View style={styles.cardHeader}>
@@ -18,8 +25,14 @@ const EntryCard = ({ item, onToggle, onRemove, onOpenMap, onPreviewPhoto }) => {
           {item.title}
         </Text>
 
-        <TouchableOpacity onPress={() => onRemove(item.id)} style={styles.deleteBtnContainer}>
-          <Ionicons name="trash-outline" size={20} color="#ff5252" />
+        {/* Botão de Editar */}
+        <TouchableOpacity onPress={() => onEdit(item)} style={styles.iconBtn}>
+          <Ionicons name="pencil-outline" size={18} color="#2f6fed" />
+        </TouchableOpacity>
+
+        {/* Botão de Excluir */}
+        <TouchableOpacity onPress={() => onRemove(item.id)} style={styles.iconBtn}>
+          <Ionicons name="trash-outline" size={18} color="#ff5252" />
         </TouchableOpacity>
       </View>
 
@@ -44,6 +57,7 @@ const EntryCard = ({ item, onToggle, onRemove, onOpenMap, onPreviewPhoto }) => {
       <Text style={styles.dateText}>
         {new Date(item.createdAt).toLocaleDateString('pt-BR')} às{' '}
         {new Date(item.createdAt).toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' })}
+        {item.updatedAt ? ' (editado)' : ''}
       </Text>
     </View>
   );

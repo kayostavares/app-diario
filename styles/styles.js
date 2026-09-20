@@ -1,52 +1,59 @@
-import { StyleSheet, Dimensions } from 'react-native';
+import { StyleSheet, Dimensions, Platform, StatusBar } from 'react-native';
 
 const { width } = Dimensions.get('window');
 
 const styles = StyleSheet.create({
-  container: {
+safeArea: {
+    flex: 1,
+    backgroundColor: '#ffffff', // Deixa branco para casar com o header
+  },
+  safeAreaCentered: {
     flex: 1,
     backgroundColor: '#f8f9fa',
-  },
-  centered: {
-    flex: 1,
     justifyContent: 'center',
     alignItems: 'center',
-    backgroundColor: '#f8f9fa',
+    paddingTop: Platform.OS === 'android' ? StatusBar.currentHeight : 0,
   },
   infoText: {
-    marginTop: 12,
+    marginTop: 14,
     fontSize: 16,
     color: '#555',
     fontWeight: '500',
   },
-  // Top Header
-  header: {
-    paddingHorizontal: 20,
-    paddingTop: 16,
-    paddingBottom: 12,
+   header: {
+    paddingHorizontal: 16,
+    paddingTop: 10,
+    paddingBottom: 14,
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'center',
-    backgroundColor: '#fff',
+    backgroundColor: '#ffffff',
     borderBottomWidth: 1,
-    borderBottomColor: '#eee',
+    borderBottomColor: '#f0f0f0',
   },
   headerTitle: {
-    fontSize: 22,
+    fontSize: 20,
     fontWeight: 'bold',
     color: '#1a1a1a',
   },
   headerSubtitle: {
     fontSize: 12,
     color: '#777',
-    marginTop: 2,
+  },
+  iconBtnHeader: {
+    padding: 6,
+    borderRadius: 8,
+    backgroundColor: '#ebf3ff',
   },
   logoutBtn: {
-    padding: 8,
+    padding: 6,
     borderRadius: 8,
     backgroundColor: '#ffebee',
   },
-  // Search Bar
+  iconBtn: {
+    padding: 6,
+    marginLeft: 4,
+  },
   searchBar: {
     flexDirection: 'row',
     alignItems: 'center',
@@ -64,7 +71,6 @@ const styles = StyleSheet.create({
     fontSize: 14,
     color: '#333',
   },
-  // Filter Chips
   filterRow: {
     flexDirection: 'row',
     paddingHorizontal: 16,
@@ -88,10 +94,9 @@ const styles = StyleSheet.create({
   filterTextActive: {
     color: '#fff',
   },
-  // Lista
   listContent: {
     padding: 16,
-    paddingBottom: 80,
+    paddingBottom: 100, // Espaço extra para o botão flutuante não tampar o último item
   },
   emptyContainer: {
     alignItems: 'center',
@@ -102,7 +107,6 @@ const styles = StyleSheet.create({
     marginTop: 8,
     fontSize: 14,
   },
-  // Cards
   card: {
     backgroundColor: '#fff',
     borderRadius: 14,
@@ -125,7 +129,7 @@ const styles = StyleSheet.create({
     borderColor: '#cbd5e0',
     justifyContent: 'center',
     alignItems: 'center',
-    marginRight: 12,
+    marginRight: 10,
   },
   checkboxDone: {
     backgroundColor: '#2f6fed',
@@ -140,9 +144,6 @@ const styles = StyleSheet.create({
   cardTitleDone: {
     textDecorationLine: 'line-through',
     color: '#a0aec0',
-  },
-  deleteBtnContainer: {
-    padding: 4,
   },
   thumbnail: {
     width: '100%',
@@ -175,7 +176,6 @@ const styles = StyleSheet.create({
     fontSize: 11,
     marginTop: 8,
   },
-  // Floating Action Button (FAB)
   fab: {
     position: 'absolute',
     right: 20,
@@ -192,7 +192,6 @@ const styles = StyleSheet.create({
     shadowOpacity: 0.35,
     shadowRadius: 6,
   },
-  // Modal de Criação
   modalOverlay: {
     flex: 1,
     backgroundColor: 'rgba(0,0,0,0.5)',
@@ -203,7 +202,7 @@ const styles = StyleSheet.create({
     borderTopLeftRadius: 20,
     borderTopRightRadius: 20,
     padding: 20,
-    maxHeight: '90%',
+    maxHeight: '88%',
   },
   modalHeader: {
     flexDirection: 'row',
@@ -221,14 +220,50 @@ const styles = StyleSheet.create({
     borderColor: '#e2e8f0',
     borderRadius: 10,
     padding: 12,
-    minHeight: 80,
+    minHeight: 70,
     textAlignVertical: 'top',
     fontSize: 15,
-    marginBottom: 14,
+    marginBottom: 10,
+  },
+  modalInputSingle: {
+    borderWidth: 1,
+    borderColor: '#e2e8f0',
+    borderRadius: 10,
+    paddingHorizontal: 12,
+    paddingVertical: 10,
+    fontSize: 14,
+    marginBottom: 12,
+    backgroundColor: '#fff',
+  },
+  label: {
+    fontSize: 13,
+    fontWeight: '600',
+    color: '#4a5568',
+    marginBottom: 4,
+  },
+  gpsAlertBox: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    backgroundColor: '#ffebee',
+    padding: 10,
+    borderRadius: 8,
+    marginBottom: 12,
+    gap: 8,
+  },
+  gpsAlertBoxOk: {
+    backgroundColor: '#e8f5e9',
+  },
+  gpsAlertText: {
+    fontSize: 12,
+    color: '#c62828',
+    flex: 1,
+  },
+  gpsAlertTextOk: {
+    color: '#2e7d32',
   },
   previewContainer: {
     position: 'relative',
-    marginBottom: 14,
+    marginBottom: 12,
   },
   previewImage: {
     width: '100%',
@@ -271,11 +306,6 @@ const styles = StyleSheet.create({
   mediaButtonTextActive: {
     color: '#fff',
   },
-  gpsInfoText: {
-    fontSize: 12,
-    color: '#4a5568',
-    marginBottom: 12,
-  },
   primaryBtn: {
     backgroundColor: '#2f6fed',
     borderRadius: 10,
@@ -287,7 +317,6 @@ const styles = StyleSheet.create({
     fontSize: 15,
     fontWeight: 'bold',
   },
-  // Modal de Foto Cheia
   zoomModalOverlay: {
     flex: 1,
     backgroundColor: 'rgba(0,0,0,0.95)',
@@ -304,6 +333,38 @@ const styles = StyleSheet.create({
   zoomImage: {
     width: width,
     height: '80%',
+  },
+  profileAvatar: {
+    width: 110,
+    height: 110,
+    borderRadius: 55,
+  },
+  avatarPlaceholder: {
+    backgroundColor: '#edf2f7',
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  avatarButtonsRow: {
+    flexDirection: 'row',
+    position: 'absolute',
+    bottom: 0,
+    right: -10,
+    gap: 6,
+  },
+  avatarMiniBtn: {
+    backgroundColor: '#2f6fed',
+    width: 32,
+    height: 32,
+    borderRadius: 16,
+    justifyContent: 'center',
+    alignItems: 'center',
+    elevation: 3,
+  },
+  profileScrollContent: {
+    paddingHorizontal: 20,
+    paddingTop: 20,
+    paddingBottom: 40,
+    alignItems: 'center',
   },
 });
 

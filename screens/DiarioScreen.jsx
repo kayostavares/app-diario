@@ -10,6 +10,8 @@ import {
   Linking,
   Modal,
   Image,
+  StatusBar,
+  Platform,
 } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 
@@ -19,24 +21,21 @@ import EntryCard from '../components/EntryCard';
 import { takePhoto, pickImageFromGallery } from '../services/cameraService';
 import { getCurrentLocation } from '../services/locationService';
 import { loadEntries, saveEntries } from '../services/storageService';
-import { createEntry, toggleEntry, removeEntry } from '../utils/entryUtils';
+import { createEntry, updateEntry, toggleEntry, removeEntry } from '../utils/entryUtils';
 import styles from '../styles/styles';
 
-const DiarioScreen = ({ onLogout }) => {
+const DiarioScreen = ({ onLogout, onOpenProfile }) => {
   const [entries, setEntries] = useState([]);
   const [modalVisible, setModalVisible] = useState(false);
+  const [editingId, setEditingId] = useState(null);
 
-  // Estados do Formulário
   const [title, setTitle] = useState('');
   const [photoUri, setPhotoUri] = useState(null);
   const [coords, setCoords] = useState(null);
   const [loadingLocation, setLoadingLocation] = useState(false);
 
-  // Estados de Busca e Filtro
   const [search, setSearch] = useState('');
-  const [filter, setFilter] = useState('ALL'); // ALL | PENDING | DONE
-
-  // Estado para zoom de foto
+  const [filter, setFilter] = useState('ALL');
   const [previewImage, setPreviewImage] = useState(null);
 
   useEffect(() => {
@@ -46,12 +45,33 @@ const DiarioScreen = ({ onLogout }) => {
     })();
   }, []);
 
+  const resetForm = () => {
+    setTitle('');
+    setPhotoUri(null);
+    setCoords(null);
+    setEditingId(null);
+    setModalVisible(false);
+  };
+
+  const handleOpenCreate = () => {
+    resetForm();
+    setModalVisible(true);
+  };
+
+  const handleOpenEdit = (item) => {
+    setEditingId(item.id);
+    setTitle(item.title);
+    setPhotoUri(item.photoUri);
+    setCoords(item.coords);
+    setModalVisible(true);
+  };
+
   const handleTakePhoto = async () => {
     try {
       const uri = await takePhoto();
       if (uri) setPhotoUri(uri);
     } catch {
-      Alert.alert('Permissão', 'Acesso à câmera foi recusado.');
+      Alert.alert('Erro', 'Permissão de câmera negada.');
     }
   };
 
@@ -60,7 +80,7 @@ const DiarioScreen = ({ onLogout }) => {
       const uri = await pickImageFromGallery();
       if (uri) setPhotoUri(uri);
     } catch {
-      Alert.alert('Permissão', 'Acesso às fotos foi recusado.');
+      Alert.alert('Erro', 'Permissão de galeria negada.');
     }
   };
 
@@ -70,29 +90,34 @@ const DiarioScreen = ({ onLogout }) => {
       const loc = await getCurrentLocation();
       setCoords(loc);
     } catch {
-      Alert.alert('GPS', 'Não foi possível capturar sua localização.');
+      Alert.alert('Erro', 'Ative seu GPS e permita o acesso para continuar.');
     } finally {
       setLoadingLocation(false);
     }
   };
 
-  const handleAddEntry = async () => {
+  const handleSubmitEntry = async () => {
     if (!title.trim()) {
-      Alert.alert('Atenção', 'Digite o título da anotação/tarefa.');
+      Alert.alert('Atenção', 'Informe uma descrição para o registro.');
       return;
     }
 
-    const newEntry = createEntry({ title, photoUri, coords });
-    const updated = [newEntry, ...entries];
+    if (!coords) {
+      Alert.alert('Localização Obrigatória', 'Você precisa marcar a localização via GPS antes de salvar.');
+      return;
+    }
+
+    let updated;
+    if (editingId) {
+      updated = updateEntry(entries, editingId, { title, photoUri, coords });
+    } else {
+      const newEntry = createEntry({ title, photoUri, coords });
+      updated = [newEntry, ...entries];
+    }
 
     setEntries(updated);
     await saveEntries(updated);
-
-    // Resetar
-    setTitle('');
-    setPhotoUri(null);
-    setCoords(null);
-    setModalVisible(false);
+    resetForm();
   };
 
   const handleToggle = async (id) => {
@@ -102,7 +127,7 @@ const DiarioScreen = ({ onLogout }) => {
   };
 
   const handleRemove = (id) => {
-    Alert.alert('Excluir', 'Tem certeza que deseja apagar este registro?', [
+    Alert.alert('Excluir', 'Deseja apagar permanentemente este registro?', [
       { text: 'Cancelar', style: 'cancel' },
       {
         text: 'Excluir',
@@ -122,36 +147,44 @@ const DiarioScreen = ({ onLogout }) => {
     Linking.openURL(url);
   };
 
-  // Filtragem dinâmica
   const filteredEntries = useMemo(() => {
     return entries.filter((e) => {
       const matchesSearch = e.title.toLowerCase().includes(search.toLowerCase());
       if (!matchesSearch) return false;
-
       if (filter === 'PENDING') return !e.done;
       if (filter === 'DONE') return e.done;
       return true;
     });
   }, [entries, search, filter]);
 
-  return (
-    <SafeAreaView style={styles.container}>
-      {/* Top Header */}
+ return (
+    <SafeAreaView style={styles.safeArea}>
+      <StatusBar 
+        barStyle="dark-content" 
+        backgroundColor="#ffffff" 
+        translucent={false} 
+      />
+
       <View style={styles.header}>
         <View>
           <Text style={styles.headerTitle}>Diário de Campo</Text>
-          <Text style={styles.headerSubtitle}>{entries.length} anotações cadastradas</Text>
+          <Text style={styles.headerSubtitle}>{entries.length} registros</Text>
         </View>
-        <TouchableOpacity style={styles.logoutBtn} onPress={onLogout}>
-          <Ionicons name="log-out-outline" size={22} color="#ff5252" />
-        </TouchableOpacity>
+        <View style={{ flexDirection: 'row', gap: 8 }}>
+          <TouchableOpacity style={styles.iconBtnHeader} onPress={onOpenProfile}>
+            <Ionicons name="person-circle-outline" size={26} color="#2f6fed" />
+          </TouchableOpacity>
+          <TouchableOpacity style={styles.logoutBtn} onPress={onLogout}>
+            <Ionicons name="log-out-outline" size={22} color="#ff5252" />
+          </TouchableOpacity>
+        </View>
       </View>
 
-      {/* Barra de Pesquisa */}
+      {/* Busca */}
       <View style={styles.searchBar}>
         <Ionicons name="search" size={18} color="#888" style={{ marginRight: 8 }} />
         <TextInput
-          placeholder="Pesquisar anotações..."
+          placeholder="Pesquisar..."
           value={search}
           onChangeText={setSearch}
           style={styles.searchInput}
@@ -192,14 +225,17 @@ const DiarioScreen = ({ onLogout }) => {
         </TouchableOpacity>
       </View>
 
-      {/* Lista de Registros */}
+      {/* FlatList com rolagem sem corte */}
       <FlatList
         data={filteredEntries}
         keyExtractor={(item) => item.id}
+        keyboardShouldPersistTaps="handled"
+        showsVerticalScrollIndicator={false}
         renderItem={({ item }) => (
           <EntryCard
             item={item}
             onToggle={handleToggle}
+            onEdit={handleOpenEdit}
             onRemove={handleRemove}
             onOpenMap={handleOpenMap}
             onPreviewPhoto={(uri) => setPreviewImage(uri)}
@@ -215,18 +251,15 @@ const DiarioScreen = ({ onLogout }) => {
       />
 
       {/* Botão Flutuante (FAB) */}
-      <TouchableOpacity
-        style={styles.fab}
-        onPress={() => setModalVisible(true)}
-        activeOpacity={0.8}
-      >
+      <TouchableOpacity style={styles.fab} onPress={handleOpenCreate} activeOpacity={0.8}>
         <Ionicons name="add" size={30} color="#fff" />
       </TouchableOpacity>
 
-      {/* Modal do Formulário */}
+      {/* Modal Formulário */}
       <EntryForm
         visible={modalVisible}
-        onClose={() => setModalVisible(false)}
+        onClose={resetForm}
+        isEditing={!!editingId}
         title={title}
         setTitle={setTitle}
         photoUri={photoUri}
@@ -236,24 +269,17 @@ const DiarioScreen = ({ onLogout }) => {
         onTakePhoto={handleTakePhoto}
         onPickGallery={handlePickGallery}
         onCaptureLocation={handleCaptureLocation}
-        onAddEntry={handleAddEntry}
+        onSubmit={handleSubmitEntry}
       />
 
-      {/* Modal de Zoom da Foto */}
+      {/* Modal Zoom */}
       <Modal visible={!!previewImage} transparent animationType="fade">
         <View style={styles.zoomModalOverlay}>
-          <TouchableOpacity
-            style={styles.closeZoomBtn}
-            onPress={() => setPreviewImage(null)}
-          >
+          <TouchableOpacity style={styles.closeZoomBtn} onPress={() => setPreviewImage(null)}>
             <Ionicons name="close" size={30} color="#fff" />
           </TouchableOpacity>
           {previewImage && (
-            <Image
-              source={{ uri: previewImage }}
-              style={styles.zoomImage}
-              resizeMode="contain"
-            />
+            <Image source={{ uri: previewImage }} style={styles.zoomImage} resizeMode="contain" />
           )}
         </View>
       </Modal>
