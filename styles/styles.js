@@ -5,7 +5,7 @@ const { width } = Dimensions.get('window');
 const styles = StyleSheet.create({
 safeArea: {
     flex: 1,
-    backgroundColor: '#ffffff', // Deixa branco para casar com o header
+    backgroundColor: '#ffffff',
   },
   safeAreaCentered: {
     flex: 1,
@@ -96,7 +96,7 @@ safeArea: {
   },
   listContent: {
     padding: 16,
-    paddingBottom: 100, // Espaço extra para o botão flutuante não tampar o último item
+    paddingBottom: 100,
   },
   emptyContainer: {
     alignItems: 'center',
@@ -366,6 +366,217 @@ safeArea: {
     paddingBottom: 40,
     alignItems: 'center',
   },
+
+// Barra de Pastas
+  folderBarContainer: {
+    backgroundColor: '#fff',
+    paddingVertical: 10,
+    borderBottomWidth: 1,
+    borderBottomColor: '#edf2f7',
+  },
+  folderTab: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    paddingHorizontal: 12,
+    paddingVertical: 7,
+    borderRadius: 20,
+    backgroundColor: '#edf2f7',
+    gap: 6,
+  },
+  folderTabActive: {
+    backgroundColor: '#2f6fed',
+  },
+  folderTabText: {
+    fontSize: 12,
+    fontWeight: '600',
+    color: '#4a5568',
+  },
+  folderTabTextActive: {
+    color: '#fff',
+  },
+  folderTabAdd: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    paddingHorizontal: 12,
+    paddingVertical: 7,
+    borderRadius: 20,
+    borderWidth: 1,
+    borderColor: '#2f6fed',
+    borderStyle: 'dashed',
+    gap: 4,
+  },
+  folderTabAddText: {
+    fontSize: 12,
+    fontWeight: '600',
+    color: '#2f6fed',
+  },
+  folderBadge: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    backgroundColor: '#edf2f7',
+    paddingHorizontal: 8,
+    paddingVertical: 2,
+    borderRadius: 6,
+    alignSelf: 'flex-start',
+    marginTop: 4,
+    gap: 4,
+  },
+  folderBadgeText: {
+    fontSize: 11,
+    color: '#2f6fed',
+    fontWeight: '600',
+  },
+  folderSelectChip: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    borderWidth: 1,
+    borderColor: '#2f6fed',
+    paddingHorizontal: 12,
+    paddingVertical: 6,
+    borderRadius: 16,
+    marginRight: 8,
+    backgroundColor: '#fff',
+  },
+  folderSelectChipActive: {
+    backgroundColor: '#2f6fed',
+  },
+  folderSelectChipText: {
+    fontSize: 12,
+    color: '#2f6fed',
+    fontWeight: '600',
+  },
+  folderSelectChipTextActive: {
+    color: '#fff',
+  },
+  folderModalContent: {
+    backgroundColor: '#fff',
+    borderRadius: 16,
+    padding: 20,
+    marginHorizontal: 20,
+    shadowColor: '#000',
+    shadowOpacity: 0.1,
+    shadowRadius: 10,
+    elevation: 5,
+  },
+
+  // Dropdown do Header
+  headerFolderDropdown: {
+    flex: 1,
+    marginRight: 10,
+  },
+  folderDropdownBtn: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    borderWidth: 1,
+    borderColor: '#e2e8f0',
+    borderRadius: 10,
+    paddingHorizontal: 14,
+    paddingVertical: 12,
+    backgroundColor: '#f8f9fa',
+    marginBottom: 14,
+  },
+  folderDropdownBtnText: {
+    fontSize: 14,
+    fontWeight: '600',
+    color: '#2d3748',
+  },
+  sheetContent: {
+    backgroundColor: '#fff',
+    borderTopLeftRadius: 24,
+    borderTopRightRadius: 24,
+    padding: 20,
+    maxHeight: '80%',
+    minHeight: 350,
+  },
+  sheetHeader: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    marginBottom: 16,
+  },
+  sheetTitle: {
+    fontSize: 18,
+    fontWeight: 'bold',
+    color: '#1a1a1a',
+  },
+  btnOpenCreateFolder: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 8,
+    paddingVertical: 12,
+    paddingHorizontal: 14,
+    backgroundColor: '#edf2f7',
+    borderRadius: 10,
+    marginBottom: 12,
+  },
+  btnOpenCreateFolderText: {
+    color: '#2f6fed',
+    fontSize: 14,
+    fontWeight: '700',
+  },
+  createFolderRow: {
+    flexDirection: 'row',
+    gap: 8,
+    marginBottom: 14,
+    alignItems: 'center',
+  },
+  createFolderInput: {
+    flex: 1,
+    borderWidth: 1,
+    borderColor: '#2f6fed',
+    borderRadius: 8,
+    paddingHorizontal: 12,
+    paddingVertical: 8,
+    fontSize: 14,
+  },
+  createFolderConfirmBtn: {
+    backgroundColor: '#2f6fed',
+    padding: 10,
+    borderRadius: 8,
+  },
+  createFolderCancelBtn: {
+    backgroundColor: '#eee',
+    padding: 10,
+    borderRadius: 8,
+  },
+  folderSearchBar: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    backgroundColor: '#f8f9fa',
+    borderRadius: 8,
+    paddingHorizontal: 10,
+    paddingVertical: 6,
+    marginBottom: 10,
+    gap: 6,
+  },
+  folderSearchInput: {
+    flex: 1,
+    fontSize: 13,
+  },
+  folderListItem: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    paddingVertical: 14,
+    paddingHorizontal: 12,
+    borderRadius: 10,
+    borderBottomWidth: 1,
+    borderBottomColor: '#f0f0f0',
+  },
+  folderListItemActive: {
+    backgroundColor: '#ebf3ff',
+  },
+  folderListItemText: {
+    fontSize: 15,
+    color: '#333',
+    fontWeight: '500',
+  },
+  folderListItemTextActive: {
+    color: '#2f6fed',
+    fontWeight: '700',
+  },
+
 });
 
 export default styles;

@@ -25,7 +25,6 @@ const RegisterScreen = ({ onRegister, onBack }) => {
   const [password, setPassword] = useState('');
   const [confirmPassword, setConfirmPassword] = useState('');
 
-  // Proporção compacta para permitir todos os campos sem estrangular a tela
   const logoSize = Math.min(Math.max(width * 0.22, 65), 100);
 
   const handleRegister = () => {

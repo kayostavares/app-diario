@@ -15,7 +15,6 @@ export const getCurrentLocation = async () => {
     longitude: position.coords.longitude,
   };
 
-  // Tenta converter coordenadas em endereço real legível
   let address = null;
   try {
     const [geo] = await Location.reverseGeocodeAsync(coords);

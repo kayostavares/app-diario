@@ -23,8 +23,6 @@ const LoginScreen = ({ onLogin, onRegister, onForgotPassword }) => {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
 
-  // Calcula o tamanho da logo dinamicamente: 
-  // Entre 80px (telas bem pequenas) e 140px (telas grandes/tablets)
   const logoSize = Math.min(Math.max(width * 0.28, 80), 140);
 
   const handleLogin = () => {
@@ -51,7 +49,6 @@ const LoginScreen = ({ onLogin, onRegister, onForgotPassword }) => {
           <ScrollView
             contentContainerStyle={[
               styles.scrollContent,
-              // Ajusta o preenchimento se a tela for menor
               { minHeight: height - (StatusBar.currentHeight || 0) },
             ]}
             showsVerticalScrollIndicator={false}
