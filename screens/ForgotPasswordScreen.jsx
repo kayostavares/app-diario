@@ -1,6 +1,5 @@
 import React, { useState } from 'react';
 import {
-  SafeAreaView,
   View,
   Text,
   TextInput,
@@ -14,6 +13,8 @@ import {
   Keyboard,
   StatusBar,
 } from 'react-native';
+
+import { SafeAreaView } from 'react-native-safe-area-context';
 
 const ForgotPasswordScreen = ({ onSendReset, onBack }) => {
   const [email, setEmail] = useState('');

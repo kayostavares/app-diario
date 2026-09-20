@@ -1,6 +1,5 @@
 import React, { useState } from 'react';
 import {
-  SafeAreaView,
   View,
   Text,
   TextInput,
@@ -13,13 +12,21 @@ import {
   TouchableWithoutFeedback,
   Keyboard,
   StatusBar,
+  Image,
+  useWindowDimensions,
 } from 'react-native';
 
+import { SafeAreaView } from 'react-native-safe-area-context';
+
 const RegisterScreen = ({ onRegister, onBack }) => {
+  const { width, height } = useWindowDimensions();
   const [name, setName] = useState('');
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [confirmPassword, setConfirmPassword] = useState('');
+
+  // Proporção compacta para permitir todos os campos sem estrangular a tela
+  const logoSize = Math.min(Math.max(width * 0.22, 65), 100);
 
   const handleRegister = () => {
     Keyboard.dismiss();
@@ -65,10 +72,19 @@ const RegisterScreen = ({ onRegister, onBack }) => {
             </TouchableOpacity>
 
             <View style={styles.headerBox}>
-              <Text style={styles.title}>Criar conta</Text>
-              <Text style={styles.subtitle}>
-                Cadastre-se no Diário de Campo
+              <Image
+                source={require('../assets/icon.png')}
+                style={{
+                  width: logoSize,
+                  height: logoSize,
+                  marginBottom: 6,
+                }}
+                resizeMode="contain"
+              />
+              <Text style={[styles.title, { fontSize: width < 360 ? 20 : 24 }]}>
+                Criar conta
               </Text>
+              <Text style={styles.subtitle}>Cadastre-se no Diário de Campo</Text>
             </View>
 
             <View style={styles.formCard}>
@@ -138,15 +154,15 @@ const styles = StyleSheet.create({
   scrollContent: {
     flexGrow: 1,
     paddingHorizontal: 24,
-    paddingTop: 16,
-    paddingBottom: 40,
+    paddingTop: 10,
+    paddingBottom: 30,
     justifyContent: 'center',
   },
   backButton: {
     alignSelf: 'flex-start',
     paddingVertical: 8,
     paddingHorizontal: 4,
-    marginBottom: 10,
+    marginBottom: 4,
   },
   backText: {
     color: '#2f6fed',
@@ -154,11 +170,10 @@ const styles = StyleSheet.create({
     fontSize: 15,
   },
   headerBox: {
-    marginBottom: 20,
+    marginBottom: 14,
     alignItems: 'center',
   },
   title: {
-    fontSize: 26,
     fontWeight: '700',
     color: '#1a1a1a',
     textAlign: 'center',
@@ -166,8 +181,8 @@ const styles = StyleSheet.create({
   subtitle: {
     textAlign: 'center',
     color: '#666',
-    marginTop: 6,
-    fontSize: 14,
+    marginTop: 3,
+    fontSize: 13,
   },
   formCard: {
     backgroundColor: '#fff',
@@ -190,8 +205,8 @@ const styles = StyleSheet.create({
     borderColor: '#e2e8f0',
     borderRadius: 8,
     paddingHorizontal: 14,
-    paddingVertical: 12,
-    marginBottom: 14,
+    paddingVertical: 11,
+    marginBottom: 12,
     fontSize: 15,
     color: '#222',
   },

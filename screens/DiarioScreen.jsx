@@ -1,6 +1,5 @@
 import React, { useState, useEffect, useMemo } from 'react';
 import {
-  SafeAreaView,
   View,
   Text,
   TextInput,
@@ -11,8 +10,8 @@ import {
   Modal,
   Image,
   StatusBar,
-  Platform,
 } from 'react-native';
+import { SafeAreaView } from 'react-native-safe-area-context';
 import { Ionicons } from '@expo/vector-icons';
 
 import EntryForm from '../components/EntryForm';
@@ -40,8 +39,14 @@ const DiarioScreen = ({ onLogout, onOpenProfile }) => {
 
   useEffect(() => {
     (async () => {
-      const stored = await loadEntries();
-      setEntries(stored);
+      try {
+        const stored = await loadEntries();
+        if (Array.isArray(stored)) {
+          setEntries(stored);
+        }
+      } catch (err) {
+        console.log('Erro ao carregar dados:', err);
+      }
     })();
   }, []);
 
@@ -59,10 +64,11 @@ const DiarioScreen = ({ onLogout, onOpenProfile }) => {
   };
 
   const handleOpenEdit = (item) => {
+    if (!item) return;
     setEditingId(item.id);
-    setTitle(item.title);
-    setPhotoUri(item.photoUri);
-    setCoords(item.coords);
+    setTitle(item.title || '');
+    setPhotoUri(item.photoUri || null);
+    setCoords(item.coords || null);
     setModalVisible(true);
   };
 
@@ -71,7 +77,7 @@ const DiarioScreen = ({ onLogout, onOpenProfile }) => {
       const uri = await takePhoto();
       if (uri) setPhotoUri(uri);
     } catch {
-      Alert.alert('Erro', 'Permissão de câmera negada.');
+      Alert.alert('Erro', 'Permissão de câmera negada ou erro ao capturar.');
     }
   };
 
@@ -88,36 +94,42 @@ const DiarioScreen = ({ onLogout, onOpenProfile }) => {
     setLoadingLocation(true);
     try {
       const loc = await getCurrentLocation();
-      setCoords(loc);
+      if (loc) {
+        setCoords(loc);
+      }
     } catch {
-      Alert.alert('Erro', 'Ative seu GPS e permita o acesso para continuar.');
+      Alert.alert('GPS Obrigatório', 'Ative sua localização para continuar.');
     } finally {
       setLoadingLocation(false);
     }
   };
 
   const handleSubmitEntry = async () => {
-    if (!title.trim()) {
-      Alert.alert('Atenção', 'Informe uma descrição para o registro.');
+    if (!title || !title.trim()) {
+      Alert.alert('Atenção', 'Informe um título/descrição para o registro.');
       return;
     }
 
     if (!coords) {
-      Alert.alert('Localização Obrigatória', 'Você precisa marcar a localização via GPS antes de salvar.');
+      Alert.alert('Localização Obrigatória', 'Por favor, marque a localização via GPS antes de salvar.');
       return;
     }
 
-    let updated;
-    if (editingId) {
-      updated = updateEntry(entries, editingId, { title, photoUri, coords });
-    } else {
-      const newEntry = createEntry({ title, photoUri, coords });
-      updated = [newEntry, ...entries];
-    }
+    try {
+      let updated;
+      if (editingId) {
+        updated = updateEntry(entries, editingId, { title, photoUri, coords });
+      } else {
+        const newEntry = createEntry({ title, photoUri, coords });
+        updated = [newEntry, ...(entries || [])];
+      }
 
-    setEntries(updated);
-    await saveEntries(updated);
-    resetForm();
+      setEntries(updated);
+      await saveEntries(updated);
+      resetForm();
+    } catch (e) {
+      Alert.alert('Erro', 'Não foi possível salvar a anotação.');
+    }
   };
 
   const handleToggle = async (id) => {
@@ -127,7 +139,7 @@ const DiarioScreen = ({ onLogout, onOpenProfile }) => {
   };
 
   const handleRemove = (id) => {
-    Alert.alert('Excluir', 'Deseja apagar permanentemente este registro?', [
+    Alert.alert('Excluir', 'Deseja apagar este registro permanentemente?', [
       { text: 'Cancelar', style: 'cancel' },
       {
         text: 'Excluir',
@@ -142,14 +154,16 @@ const DiarioScreen = ({ onLogout, onOpenProfile }) => {
   };
 
   const handleOpenMap = (item) => {
-    if (!item.coords) return;
-    const url = `https://www.google.com/maps/search/?api=1&query=${item.coords.latitude},${item.coords.longitude}`;
+    if (!item?.coords) return;
+    const { latitude, longitude } = item.coords;
+    const url = `https://www.google.com/maps/search/?api=1&query=${latitude},${longitude}`;
     Linking.openURL(url);
   };
 
   const filteredEntries = useMemo(() => {
+    if (!Array.isArray(entries)) return [];
     return entries.filter((e) => {
-      const matchesSearch = e.title.toLowerCase().includes(search.toLowerCase());
+      const matchesSearch = (e.title || '').toLowerCase().includes(search.toLowerCase());
       if (!matchesSearch) return false;
       if (filter === 'PENDING') return !e.done;
       if (filter === 'DONE') return e.done;
@@ -157,18 +171,14 @@ const DiarioScreen = ({ onLogout, onOpenProfile }) => {
     });
   }, [entries, search, filter]);
 
- return (
+  return (
     <SafeAreaView style={styles.safeArea}>
-      <StatusBar 
-        barStyle="dark-content" 
-        backgroundColor="#ffffff" 
-        translucent={false} 
-      />
+      <StatusBar barStyle="dark-content" backgroundColor="#ffffff" translucent={false} />
 
       <View style={styles.header}>
         <View>
           <Text style={styles.headerTitle}>Diário de Campo</Text>
-          <Text style={styles.headerSubtitle}>{entries.length} registros</Text>
+          <Text style={styles.headerSubtitle}>{entries?.length || 0} registros</Text>
         </View>
         <View style={{ flexDirection: 'row', gap: 8 }}>
           <TouchableOpacity style={styles.iconBtnHeader} onPress={onOpenProfile}>
@@ -180,7 +190,6 @@ const DiarioScreen = ({ onLogout, onOpenProfile }) => {
         </View>
       </View>
 
-      {/* Busca */}
       <View style={styles.searchBar}>
         <Ionicons name="search" size={18} color="#888" style={{ marginRight: 8 }} />
         <TextInput
@@ -197,14 +206,13 @@ const DiarioScreen = ({ onLogout, onOpenProfile }) => {
         )}
       </View>
 
-      {/* Filtros Rápidos */}
       <View style={styles.filterRow}>
         <TouchableOpacity
           style={[styles.filterChip, filter === 'ALL' && styles.filterChipActive]}
           onPress={() => setFilter('ALL')}
         >
           <Text style={[styles.filterText, filter === 'ALL' && styles.filterTextActive]}>
-            Todos ({entries.length})
+            Todos ({entries?.length || 0})
           </Text>
         </TouchableOpacity>
         <TouchableOpacity
@@ -225,10 +233,9 @@ const DiarioScreen = ({ onLogout, onOpenProfile }) => {
         </TouchableOpacity>
       </View>
 
-      {/* FlatList com rolagem sem corte */}
       <FlatList
         data={filteredEntries}
-        keyExtractor={(item) => item.id}
+        keyExtractor={(item) => item?.id?.toString() || Math.random().toString()}
         keyboardShouldPersistTaps="handled"
         showsVerticalScrollIndicator={false}
         renderItem={({ item }) => (
@@ -250,16 +257,16 @@ const DiarioScreen = ({ onLogout, onOpenProfile }) => {
         }
       />
 
-      {/* Botão Flutuante (FAB) */}
+      {/* Botão Flutuante (+) para Adicionar */}
       <TouchableOpacity style={styles.fab} onPress={handleOpenCreate} activeOpacity={0.8}>
         <Ionicons name="add" size={30} color="#fff" />
       </TouchableOpacity>
 
-      {/* Modal Formulário */}
+      {/* Modal do Formulário */}
       <EntryForm
         visible={modalVisible}
         onClose={resetForm}
-        isEditing={!!editingId}
+        isEditing={Boolean(editingId)}
         title={title}
         setTitle={setTitle}
         photoUri={photoUri}
@@ -272,8 +279,8 @@ const DiarioScreen = ({ onLogout, onOpenProfile }) => {
         onSubmit={handleSubmitEntry}
       />
 
-      {/* Modal Zoom */}
-      <Modal visible={!!previewImage} transparent animationType="fade">
+      {/* Modal Zoom da Imagem */}
+      <Modal visible={Boolean(previewImage)} transparent animationType="fade">
         <View style={styles.zoomModalOverlay}>
           <TouchableOpacity style={styles.closeZoomBtn} onPress={() => setPreviewImage(null)}>
             <Ionicons name="close" size={30} color="#fff" />
