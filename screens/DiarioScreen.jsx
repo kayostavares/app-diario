@@ -39,14 +39,12 @@ const DiarioScreen = ({ onLogout, onOpenProfile }) => {
   const [folderSelectorVisible, setFolderSelectorVisible] = useState(false);
   const [editingId, setEditingId] = useState(null);
 
-  // Formulário
   const [title, setTitle] = useState('');
   const [photoUri, setPhotoUri] = useState(null);
   const [coords, setCoords] = useState(null);
   const [entryFolderId, setEntryFolderId] = useState('general');
   const [loadingLocation, setLoadingLocation] = useState(false);
 
-  // Filtros
   const [search, setSearch] = useState('');
   const [filter, setFilter] = useState('ALL');
   const [previewImage, setPreviewImage] = useState(null);
@@ -76,21 +74,43 @@ const DiarioScreen = ({ onLogout, onOpenProfile }) => {
     setSelectedFolderFilter(newFolder.id);
   };
 
-  // Excluir Pasta
   const handleDeleteFolder = (folderId) => {
     if (folderId === 'general') {
-      Alert.alert('Aviso', 'A pasta Geral padrão não pode ser excluída.');
+      Alert.alert('Aviso', 'A pasta "Geral" é padrão do sistema e não pode ser excluída.');
       return;
     }
 
-    Alert.alert(
-      'Excluir Pasta',
-      'Os registros contidos nesta pasta serão movidos para Geral. Confirmar?',
-      [
+    const folderName = folderNamesMap[folderId] || 'esta pasta';
+    const count = entries.filter((e) => (e.folderId || 'general') === folderId).length;
+
+    if (count === 0) {
+      Alert.alert('Excluir Pasta', `Deseja realmente excluir a pasta "${folderName}"?`, [
         { text: 'Cancelar', style: 'cancel' },
         {
           text: 'Excluir',
           style: 'destructive',
+          onPress: async () => {
+            const updatedFolders = folders.filter((f) => f.id !== folderId);
+            setFolders(updatedFolders);
+            await saveFolders(updatedFolders);
+            setSelectedFolderFilter('ALL');
+            Alert.alert('Pasta Excluída', `A pasta "${folderName}" foi removida.`);
+          },
+        },
+      ]);
+      return;
+    }
+
+    Alert.alert(
+      `Excluir "${folderName}"?`,
+      `Esta pasta contém ${count} registro(s). O que deseja fazer com as anotações que estão dentro dela?`,
+      [
+        {
+          text: 'Cancelar',
+          style: 'cancel',
+        },
+        {
+          text: 'Manter registros',
           onPress: async () => {
             const updatedFolders = folders.filter((f) => f.id !== folderId);
             setFolders(updatedFolders);
@@ -103,6 +123,23 @@ const DiarioScreen = ({ onLogout, onOpenProfile }) => {
             await saveEntries(updatedEntries);
 
             setSelectedFolderFilter('ALL');
+            Alert.alert('Concluído', `Pasta removida. As ${count} anotações foram movidas para a pasta Geral.`);
+          },
+        },
+        {
+          text: 'Excluir tudo',
+          style: 'destructive',
+          onPress: async () => {
+            const updatedFolders = folders.filter((f) => f.id !== folderId);
+            setFolders(updatedFolders);
+            await saveFolders(updatedFolders);
+
+            const updatedEntries = entries.filter((e) => (e.folderId || 'general') !== folderId);
+            setEntries(updatedEntries);
+            await saveEntries(updatedEntries);
+
+            setSelectedFolderFilter('ALL');
+            Alert.alert('Concluído', `Pasta e ${count} registro(s) foram apagados permanentemente.`);
           },
         },
       ]
@@ -208,19 +245,28 @@ const DiarioScreen = ({ onLogout, onOpenProfile }) => {
   };
 
   const handleRemove = (id) => {
-    Alert.alert('Excluir', 'Deseja apagar este registro permanentemente?', [
-      { text: 'Cancelar', style: 'cancel' },
-      {
-        text: 'Excluir',
-        style: 'destructive',
-        onPress: async () => {
-          const updated = removeEntry(entries, id);
-          setEntries(updated);
-          await saveEntries(updated);
-        },
-      },
-    ]);
-  };
+      Alert.alert(
+        'Excluir Registro',
+        'Tem certeza de que deseja apagar este registro permanentemente?',
+        [
+          {
+            text: 'Cancelar',
+            style: 'cancel',
+          },
+          {
+            text: 'Sim, Excluir',
+            style: 'destructive',
+            onPress: async () => {
+              const updated = removeEntry(entries, id);
+              setEntries(updated);
+              await saveEntries(updated);
+
+              Alert.alert('Registro Excluído', 'A anotação foi removida com sucesso.');
+            },
+          },
+        ]
+      );
+    };
 
   const handleOpenMap = (item) => {
     if (!item?.coords) return;
@@ -236,7 +282,6 @@ const DiarioScreen = ({ onLogout, onOpenProfile }) => {
     return map;
   }, [folders]);
 
-  // Nome da pasta ativa no momento
   const activeFilterName =
     selectedFolderFilter === 'ALL'
       ? 'Todas as Pastas'
@@ -260,7 +305,6 @@ const DiarioScreen = ({ onLogout, onOpenProfile }) => {
     <SafeAreaView style={styles.safeArea}>
       <StatusBar barStyle="dark-content" backgroundColor="#ffffff" translucent={false} />
 
-      {/* Header com Seletor Dropdown no título */}
       <View style={styles.header}>
         <TouchableOpacity
           style={styles.headerFolderDropdown}
@@ -289,7 +333,6 @@ const DiarioScreen = ({ onLogout, onOpenProfile }) => {
         </View>
       </View>
 
-      {/* Busca */}
       <View style={styles.searchBar}>
         <Ionicons name="search" size={18} color="#888" style={{ marginRight: 8 }} />
         <TextInput
@@ -306,7 +349,6 @@ const DiarioScreen = ({ onLogout, onOpenProfile }) => {
         )}
       </View>
 
-      {/* Filtro Status */}
       <View style={styles.filterRow}>
         <TouchableOpacity
           style={[styles.filterChip, filter === 'ALL' && styles.filterChipActive]}
@@ -334,7 +376,6 @@ const DiarioScreen = ({ onLogout, onOpenProfile }) => {
         </TouchableOpacity>
       </View>
 
-      {/* Lista de Cards */}
       <FlatList
         data={filteredEntries}
         keyExtractor={(item) => item?.id?.toString() || Math.random().toString()}
@@ -360,12 +401,10 @@ const DiarioScreen = ({ onLogout, onOpenProfile }) => {
         }
       />
 
-      {/* Botão Flutuante (+) */}
       <TouchableOpacity style={styles.fab} onPress={handleOpenCreate} activeOpacity={0.8}>
         <Ionicons name="add" size={30} color="#fff" />
       </TouchableOpacity>
 
-      {/* Modal Principal do Seletor de Pastas */}
       <FolderSelectorModal
         visible={folderSelectorVisible}
         onClose={() => setFolderSelectorVisible(false)}
@@ -377,7 +416,6 @@ const DiarioScreen = ({ onLogout, onOpenProfile }) => {
         allowAllOption={true}
       />
 
-      {/* Modal do Formulário */}
       <EntryForm
         visible={modalVisible}
         onClose={resetForm}
@@ -398,7 +436,6 @@ const DiarioScreen = ({ onLogout, onOpenProfile }) => {
         onSubmit={handleSubmitEntry}
       />
 
-      {/* Modal Zoom Foto */}
       <Modal visible={Boolean(previewImage)} transparent animationType="fade">
         <View style={styles.zoomModalOverlay}>
           <TouchableOpacity style={styles.closeZoomBtn} onPress={() => setPreviewImage(null)}>
@@ -410,7 +447,7 @@ const DiarioScreen = ({ onLogout, onOpenProfile }) => {
         </View>
       </Modal>
     </SafeAreaView>
-  );
+  );  
 };
 
 export default DiarioScreen;
