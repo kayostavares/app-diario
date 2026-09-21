@@ -14,6 +14,19 @@ export default function App() {
   const [currentScreen, setCurrentScreen] = useState('LOGIN'); // LOGIN | REGISTER | FORGOT | DIARIO | PROFILE
   const [isAuthenticating, setIsAuthenticating] = useState(false);
 
+  const handleRegisterSuccess = () => {
+    Alert.alert(
+      'Conta Criada!',
+      'Seu cadastro foi realizado com sucesso. Faça login para acessar seu diário de campo.',
+      [
+        {
+          text: 'Fazer Login',
+          onPress: () => setCurrentScreen('LOGIN'),
+        },
+      ]
+    );
+  };
+
   const handleLogin = async () => {
     setIsAuthenticating(true);
     const authenticated = await authenticateUser();
@@ -34,7 +47,7 @@ export default function App() {
     case 'REGISTER':
       return (
         <RegisterScreen
-          onRegister={() => setCurrentScreen('LOGIN')}
+          onRegister={handleRegisterSuccess}
           onBack={() => setCurrentScreen('LOGIN')}
         />
       );
