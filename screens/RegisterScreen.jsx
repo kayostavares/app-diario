@@ -15,11 +15,12 @@ import {
   Image,
   useWindowDimensions,
 } from 'react-native';
-
 import { SafeAreaView } from 'react-native-safe-area-context';
+import { useTheme } from '../styles/theme';
 
 const RegisterScreen = ({ onRegister, onBack }) => {
-  const { width, height } = useWindowDimensions();
+  const { theme } = useTheme();
+  const { width } = useWindowDimensions();
   const [name, setName] = useState('');
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
@@ -52,8 +53,8 @@ const RegisterScreen = ({ onRegister, onBack }) => {
   };
 
   return (
-    <SafeAreaView style={styles.safeArea}>
-      <StatusBar barStyle="dark-content" backgroundColor="#f5f6fa" />
+    <SafeAreaView style={[styles.safeArea, { backgroundColor: theme.background }]}>
+      <StatusBar barStyle={theme.statusBar} backgroundColor={theme.background} />
       <KeyboardAvoidingView
         style={{ flex: 1 }}
         behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
@@ -67,7 +68,7 @@ const RegisterScreen = ({ onRegister, onBack }) => {
             bounces={true}
           >
             <TouchableOpacity onPress={onBack} style={styles.backButton}>
-              <Text style={styles.backText}>← Voltar</Text>
+              <Text style={[styles.backText, { color: theme.primary }]}>← Voltar</Text>
             </TouchableOpacity>
 
             <View style={styles.headerBox}>
@@ -80,55 +81,69 @@ const RegisterScreen = ({ onRegister, onBack }) => {
                 }}
                 resizeMode="contain"
               />
-              <Text style={[styles.title, { fontSize: width < 360 ? 20 : 24 }]}>
+              <Text style={[styles.title, { fontSize: width < 360 ? 20 : 24, color: theme.text }]}>
                 Criar conta
               </Text>
-              <Text style={styles.subtitle}>Cadastre-se no Diário de Campo</Text>
+              <Text style={[styles.subtitle, { color: theme.textSecondary }]}>
+                Cadastre-se no Diário de Campo
+              </Text>
             </View>
 
-            <View style={styles.formCard}>
-              <Text style={styles.label}>Nome Completo</Text>
+            <View style={[styles.formCard, { backgroundColor: theme.cardBg, borderColor: theme.border, borderWidth: 1 }]}>
+              <Text style={[styles.label, { color: theme.textSecondary }]}>Nome Completo</Text>
               <TextInput
-                style={styles.input}
+                style={[
+                  styles.input,
+                  { backgroundColor: theme.inputBg, borderColor: theme.border, color: theme.text },
+                ]}
                 placeholder="Ex: João da Silva"
-                placeholderTextColor="#999"
+                placeholderTextColor={theme.textSecondary}
                 value={name}
                 onChangeText={setName}
               />
 
-              <Text style={styles.label}>E-mail</Text>
+              <Text style={[styles.label, { color: theme.textSecondary }]}>E-mail</Text>
               <TextInput
-                style={styles.input}
+                style={[
+                  styles.input,
+                  { backgroundColor: theme.inputBg, borderColor: theme.border, color: theme.text },
+                ]}
                 placeholder="Ex: joao@campo.com"
-                placeholderTextColor="#999"
+                placeholderTextColor={theme.textSecondary}
                 value={email}
                 onChangeText={setEmail}
                 keyboardType="email-address"
                 autoCapitalize="none"
               />
 
-              <Text style={styles.label}>Senha</Text>
+              <Text style={[styles.label, { color: theme.textSecondary }]}>Senha</Text>
               <TextInput
-                style={styles.input}
+                style={[
+                  styles.input,
+                  { backgroundColor: theme.inputBg, borderColor: theme.border, color: theme.text },
+                ]}
                 placeholder="Mínimo 6 caracteres"
-                placeholderTextColor="#999"
+                placeholderTextColor={theme.textSecondary}
                 value={password}
                 onChangeText={setPassword}
                 secureTextEntry
               />
 
-              <Text style={styles.label}>Confirmar Senha</Text>
+              <Text style={[styles.label, { color: theme.textSecondary }]}>Confirmar Senha</Text>
               <TextInput
-                style={styles.input}
+                style={[
+                  styles.input,
+                  { backgroundColor: theme.inputBg, borderColor: theme.border, color: theme.text },
+                ]}
                 placeholder="Repita sua senha"
-                placeholderTextColor="#999"
+                placeholderTextColor={theme.textSecondary}
                 value={confirmPassword}
                 onChangeText={setConfirmPassword}
                 secureTextEntry
               />
 
               <TouchableOpacity
-                style={styles.primaryButton}
+                style={[styles.primaryButton, { backgroundColor: theme.primary }]}
                 onPress={handleRegister}
                 activeOpacity={0.8}
               >
@@ -147,8 +162,6 @@ export default RegisterScreen;
 const styles = StyleSheet.create({
   safeArea: {
     flex: 1,
-    backgroundColor: '#f5f6fa',
-    paddingTop: Platform.OS === 'android' ? StatusBar.currentHeight : 0,
   },
   scrollContent: {
     flexGrow: 1,
@@ -164,7 +177,6 @@ const styles = StyleSheet.create({
     marginBottom: 4,
   },
   backText: {
-    color: '#2f6fed',
     fontWeight: '700',
     fontSize: 15,
   },
@@ -174,17 +186,14 @@ const styles = StyleSheet.create({
   },
   title: {
     fontWeight: '700',
-    color: '#1a1a1a',
     textAlign: 'center',
   },
   subtitle: {
     textAlign: 'center',
-    color: '#666',
     marginTop: 3,
     fontSize: 13,
   },
   formCard: {
-    backgroundColor: '#fff',
     padding: 20,
     borderRadius: 14,
     shadowColor: '#000',
@@ -195,22 +204,17 @@ const styles = StyleSheet.create({
   label: {
     fontSize: 13,
     fontWeight: '600',
-    color: '#4a5568',
     marginBottom: 6,
   },
   input: {
-    backgroundColor: '#f8f9fa',
     borderWidth: 1,
-    borderColor: '#e2e8f0',
     borderRadius: 8,
     paddingHorizontal: 14,
     paddingVertical: 11,
     marginBottom: 12,
     fontSize: 15,
-    color: '#222',
   },
   primaryButton: {
-    backgroundColor: '#2f6fed',
     borderRadius: 8,
     paddingVertical: 14,
     alignItems: 'center',

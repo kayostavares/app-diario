@@ -13,10 +13,11 @@ import {
   Keyboard,
   StatusBar,
 } from 'react-native';
-
 import { SafeAreaView } from 'react-native-safe-area-context';
+import { useTheme } from '../styles/theme';
 
 const ForgotPasswordScreen = ({ onSendReset, onBack }) => {
+  const { theme } = useTheme();
   const [email, setEmail] = useState('');
 
   const handleSendReset = () => {
@@ -29,8 +30,8 @@ const ForgotPasswordScreen = ({ onSendReset, onBack }) => {
   };
 
   return (
-    <SafeAreaView style={styles.safeArea}>
-      <StatusBar barStyle="dark-content" backgroundColor="#f5f6fa" />
+    <SafeAreaView style={[styles.safeArea, { backgroundColor: theme.background }]}>
+      <StatusBar barStyle={theme.statusBar} backgroundColor={theme.background} />
       <KeyboardAvoidingView
         style={{ flex: 1 }}
         behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
@@ -41,22 +42,25 @@ const ForgotPasswordScreen = ({ onSendReset, onBack }) => {
             keyboardShouldPersistTaps="handled"
           >
             <TouchableOpacity onPress={onBack} style={styles.backButton}>
-              <Text style={styles.backText}>← Voltar</Text>
+              <Text style={[styles.backText, { color: theme.primary }]}>← Voltar</Text>
             </TouchableOpacity>
 
             <View style={styles.headerBox}>
-              <Text style={styles.title}>Esqueceu a senha?</Text>
-              <Text style={styles.subtitle}>
+              <Text style={[styles.title, { color: theme.text }]}>Esqueceu a senha?</Text>
+              <Text style={[styles.subtitle, { color: theme.textSecondary }]}>
                 Informe seu e-mail para recuperar o acesso
               </Text>
             </View>
 
-            <View style={styles.formCard}>
-              <Text style={styles.label}>E-mail cadastrado</Text>
+            <View style={[styles.formCard, { backgroundColor: theme.cardBg, borderColor: theme.border, borderWidth: 1 }]}>
+              <Text style={[styles.label, { color: theme.textSecondary }]}>E-mail cadastrado</Text>
               <TextInput
-                style={styles.input}
+                style={[
+                  styles.input,
+                  { backgroundColor: theme.inputBg, borderColor: theme.border, color: theme.text },
+                ]}
                 placeholder="seuemail@exemplo.com"
-                placeholderTextColor="#999"
+                placeholderTextColor={theme.textSecondary}
                 value={email}
                 onChangeText={setEmail}
                 keyboardType="email-address"
@@ -64,7 +68,7 @@ const ForgotPasswordScreen = ({ onSendReset, onBack }) => {
               />
 
               <TouchableOpacity
-                style={styles.primaryButton}
+                style={[styles.primaryButton, { backgroundColor: theme.primary }]}
                 onPress={handleSendReset}
               >
                 <Text style={styles.primaryButtonText}>Recuperar senha</Text>
@@ -82,8 +86,6 @@ export default ForgotPasswordScreen;
 const styles = StyleSheet.create({
   safeArea: {
     flex: 1,
-    backgroundColor: '#f5f6fa',
-    paddingTop: Platform.OS === 'android' ? StatusBar.currentHeight : 0,
   },
   scrollContent: {
     flexGrow: 1,
@@ -97,7 +99,6 @@ const styles = StyleSheet.create({
     marginBottom: 10,
   },
   backText: {
-    color: '#2f6fed',
     fontWeight: '700',
     fontSize: 15,
   },
@@ -109,16 +110,13 @@ const styles = StyleSheet.create({
     fontSize: 26,
     fontWeight: '700',
     textAlign: 'center',
-    color: '#1a1a1a',
   },
   subtitle: {
     textAlign: 'center',
-    color: '#666',
     marginTop: 6,
     fontSize: 14,
   },
   formCard: {
-    backgroundColor: '#fff',
     padding: 22,
     borderRadius: 14,
     shadowColor: '#000',
@@ -129,22 +127,17 @@ const styles = StyleSheet.create({
   label: {
     fontSize: 13,
     fontWeight: '600',
-    color: '#4a5568',
     marginBottom: 6,
   },
   input: {
-    backgroundColor: '#f8f9fa',
     borderWidth: 1,
-    borderColor: '#e2e8f0',
     borderRadius: 8,
     paddingHorizontal: 14,
     paddingVertical: 12,
     marginBottom: 16,
     fontSize: 15,
-    color: '#222',
   },
   primaryButton: {
-    backgroundColor: '#2f6fed',
     borderRadius: 8,
     paddingVertical: 14,
     alignItems: 'center',

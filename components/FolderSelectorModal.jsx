@@ -12,6 +12,7 @@ import {
   TouchableWithoutFeedback,
 } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
+import { useTheme } from '../styles/theme';
 import styles from '../styles/styles';
 
 const FolderSelectorModal = ({
@@ -24,6 +25,7 @@ const FolderSelectorModal = ({
   onDeleteFolder,
   allowAllOption = true,
 }) => {
+  const { theme } = useTheme();
   const [searchFolder, setSearchFolder] = useState('');
   const [isCreating, setIsCreating] = useState(false);
   const [newFolderName, setNewFolderName] = useState('');
@@ -51,7 +53,6 @@ const FolderSelectorModal = ({
       transparent={true}
       onRequestClose={onClose}
     >
-      {/* 1. Toque no fundo escuro fecha o modal */}
       <TouchableOpacity
         style={styles.modalOverlay}
         activeOpacity={1}
@@ -61,57 +62,63 @@ const FolderSelectorModal = ({
           behavior={Platform.OS === 'ios' ? 'padding' : undefined}
           style={{ width: '100%', justifyContent: 'flex-end' }}
         >
-          {/* 2. Toque dentro do card NÃO fecha o modal */}
           <TouchableWithoutFeedback>
-            <View style={styles.sheetContent}>
+            <View style={[styles.sheetContent, { backgroundColor: theme.cardBg }]}>
               <View style={styles.sheetHeader}>
-                <Text style={styles.sheetTitle}>Coleções & Pastas</Text>
+                <Text style={[styles.sheetTitle, { color: theme.text }]}>Coleções & Pastas</Text>
                 <TouchableOpacity onPress={onClose} hitSlop={{ top: 10, bottom: 10, left: 10, right: 10 }}>
-                  <Ionicons name="close" size={24} color="#666" />
+                  <Ionicons name="close" size={24} color={theme.textSecondary} />
                 </TouchableOpacity>
               </View>
 
               {isCreating ? (
                 <View style={styles.createFolderRow}>
                   <TextInput
-                    style={styles.createFolderInput}
+                    style={[
+                      styles.createFolderInput,
+                      { backgroundColor: theme.inputBg, borderColor: theme.primary, color: theme.text },
+                    ]}
                     placeholder="Nome da pasta..."
+                    placeholderTextColor={theme.textSecondary}
                     value={newFolderName}
                     onChangeText={setNewFolderName}
                     autoFocus
                   />
-                  <TouchableOpacity style={styles.createFolderConfirmBtn} onPress={handleCreate}>
+                  <TouchableOpacity
+                    style={[styles.createFolderConfirmBtn, { backgroundColor: theme.primary }]}
+                    onPress={handleCreate}
+                  >
                     <Ionicons name="checkmark" size={20} color="#fff" />
                   </TouchableOpacity>
                   <TouchableOpacity
-                    style={styles.createFolderCancelBtn}
+                    style={[styles.createFolderCancelBtn, { backgroundColor: theme.inputBg }]}
                     onPress={() => {
                       setIsCreating(false);
                       setNewFolderName('');
                     }}
                   >
-                    <Ionicons name="close" size={20} color="#666" />
+                    <Ionicons name="close" size={20} color={theme.textSecondary} />
                   </TouchableOpacity>
                 </View>
               ) : (
                 <TouchableOpacity
-                  style={styles.btnOpenCreateFolder}
+                  style={[styles.btnOpenCreateFolder, { backgroundColor: theme.chipBg }]}
                   onPress={() => setIsCreating(true)}
                 >
-                  <Ionicons name="add-circle" size={20} color="#2f6fed" />
-                  <Text style={styles.btnOpenCreateFolderText}>Criar Nova Pasta</Text>
+                  <Ionicons name="add-circle" size={20} color={theme.primary} />
+                  <Text style={[styles.btnOpenCreateFolderText, { color: theme.primary }]}>Criar Nova Pasta</Text>
                 </TouchableOpacity>
               )}
 
               {folders.length > 4 && (
-                <View style={styles.folderSearchBar}>
-                  <Ionicons name="search" size={16} color="#888" />
+                <View style={[styles.folderSearchBar, { backgroundColor: theme.inputBg }]}>
+                  <Ionicons name="search" size={16} color={theme.textSecondary} />
                   <TextInput
-                    style={styles.folderSearchInput}
+                    style={[styles.folderSearchInput, { color: theme.text }]}
                     placeholder="Filtrar pastas..."
                     value={searchFolder}
                     onChangeText={setSearchFolder}
-                    placeholderTextColor="#999"
+                    placeholderTextColor={theme.textSecondary}
                   />
                 </View>
               )}
@@ -126,7 +133,8 @@ const FolderSelectorModal = ({
                     <TouchableOpacity
                       style={[
                         styles.folderListItem,
-                        selectedFolderId === 'ALL' && styles.folderListItemActive,
+                        { borderBottomColor: theme.border },
+                        selectedFolderId === 'ALL' && { backgroundColor: theme.isDark ? '#233876' : '#ebf3ff' },
                       ]}
                       onPress={() => {
                         onSelectFolder('ALL');
@@ -137,19 +145,20 @@ const FolderSelectorModal = ({
                         <Ionicons
                           name="albums"
                           size={20}
-                          color={selectedFolderId === 'ALL' ? '#2f6fed' : '#666'}
+                          color={selectedFolderId === 'ALL' ? theme.primary : theme.textSecondary}
                         />
                         <Text
                           style={[
                             styles.folderListItemText,
-                            selectedFolderId === 'ALL' && styles.folderListItemTextActive,
+                            { color: theme.text },
+                            selectedFolderId === 'ALL' && { color: theme.primary, fontWeight: '700' },
                           ]}
                         >
                           Todas as Pastas
                         </Text>
                       </View>
                       {selectedFolderId === 'ALL' && (
-                        <Ionicons name="checkmark-circle" size={20} color="#2f6fed" />
+                        <Ionicons name="checkmark-circle" size={20} color={theme.primary} />
                       )}
                     </TouchableOpacity>
                   ) : null
@@ -160,7 +169,8 @@ const FolderSelectorModal = ({
                     <View
                       style={[
                         styles.folderListItem,
-                        isSelected && styles.folderListItemActive,
+                        { borderBottomColor: theme.border },
+                        isSelected && { backgroundColor: theme.isDark ? '#233876' : '#ebf3ff' },
                       ]}
                     >
                       <TouchableOpacity
@@ -173,12 +183,13 @@ const FolderSelectorModal = ({
                         <Ionicons
                           name="folder"
                           size={20}
-                          color={isSelected ? '#2f6fed' : '#f5a623'}
+                          color={isSelected ? theme.primary : '#f5a623'}
                         />
                         <Text
                           style={[
                             styles.folderListItemText,
-                            isSelected && styles.folderListItemTextActive,
+                            { color: theme.text },
+                            isSelected && { color: theme.primary, fontWeight: '700' },
                           ]}
                           numberOfLines={1}
                         >
@@ -191,7 +202,7 @@ const FolderSelectorModal = ({
                           onPress={() => onDeleteFolder(item.id)}
                           hitSlop={{ top: 10, bottom: 10, left: 10, right: 10 }}
                         >
-                          <Ionicons name="trash-outline" size={18} color="#ff5252" />
+                          <Ionicons name="trash-outline" size={18} color={theme.dangerText} />
                         </TouchableOpacity>
                       )}
 
@@ -199,7 +210,7 @@ const FolderSelectorModal = ({
                         <Ionicons
                           name="checkmark-circle"
                           size={20}
-                          color="#2f6fed"
+                          color={theme.primary}
                           style={{ marginLeft: 8 }}
                         />
                       )}

@@ -12,17 +12,19 @@ import {
   StatusBar,
   TouchableWithoutFeedback,
   Keyboard,
+  Switch,
 } from 'react-native';
-
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { Ionicons } from '@expo/vector-icons';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { takePhoto, pickImageFromGallery } from '../services/cameraService';
+import { useTheme } from '../styles/theme';
 import styles from '../styles/styles';
 
 const PROFILE_KEY = '@diario_app:user_profile';
 
 const ProfileScreen = ({ onBack }) => {
+  const { theme, isDark, toggleTheme } = useTheme();
   const [name, setName] = useState('');
   const [email, setEmail] = useState('');
   const [role, setRole] = useState('');
@@ -80,18 +82,18 @@ const ProfileScreen = ({ onBack }) => {
   };
 
   return (
-    <SafeAreaView style={styles.safeArea}>
-      <StatusBar barStyle="dark-content" backgroundColor="#fff" />
+    <SafeAreaView style={[styles.safeArea, { backgroundColor: theme.background }]}>
+      <StatusBar barStyle={theme.statusBar} backgroundColor={theme.headerBg} />
       <KeyboardAvoidingView
         style={{ flex: 1 }}
         behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
       >
-        <View style={styles.header}>
+        <View style={[styles.header, { backgroundColor: theme.headerBg, borderBottomColor: theme.border }]}>
           <TouchableOpacity onPress={onBack} style={{ flexDirection: 'row', alignItems: 'center' }}>
-            <Ionicons name="arrow-back" size={24} color="#2f6fed" />
-            <Text style={{ color: '#2f6fed', fontWeight: 'bold', marginLeft: 4 }}>Voltar</Text>
+            <Ionicons name="arrow-back" size={24} color={theme.primary} />
+            <Text style={{ color: theme.primary, fontWeight: 'bold', marginLeft: 4 }}>Voltar</Text>
           </TouchableOpacity>
-          <Text style={styles.headerTitle}>Meu Perfil</Text>
+          <Text style={[styles.headerTitle, { color: theme.text }]}>Meu Perfil</Text>
           <View style={{ width: 40 }} />
         </View>
 
@@ -105,8 +107,8 @@ const ProfileScreen = ({ onBack }) => {
               {avatarUri ? (
                 <Image source={{ uri: avatarUri }} style={styles.profileAvatar} />
               ) : (
-                <View style={[styles.profileAvatar, styles.avatarPlaceholder]}>
-                  <Ionicons name="person" size={60} color="#a0aec0" />
+                <View style={[styles.profileAvatar, styles.avatarPlaceholder, { backgroundColor: theme.inputBg }]}>
+                  <Ionicons name="person" size={60} color={theme.textSecondary} />
                 </View>
               )}
               <View style={styles.avatarButtonsRow}>
@@ -120,30 +122,67 @@ const ProfileScreen = ({ onBack }) => {
             </View>
 
             <View style={{ width: '100%' }}>
-              <Text style={styles.label}>Nome Completo</Text>
+              <View
+                style={{
+                  flexDirection: 'row',
+                  justifyContent: 'space-between',
+                  alignItems: 'center',
+                  backgroundColor: theme.cardBg,
+                  padding: 14,
+                  borderRadius: 12,
+                  marginBottom: 16,
+                  borderWidth: 1,
+                  borderColor: theme.border,
+                }}
+              >
+                <View style={{ flexDirection: 'row', alignItems: 'center', gap: 10 }}>
+                  <Ionicons name={isDark ? 'moon' : 'sunny'} size={22} color={theme.primary} />
+                  <Text style={{ fontSize: 15, fontWeight: '600', color: theme.text }}>Modo Escuro</Text>
+                </View>
+                <Switch
+                  value={isDark}
+                  onValueChange={toggleTheme}
+                  thumbColor={isDark ? theme.primary : '#f4f3f4'}
+                  trackColor={{ false: '#767577', true: '#93c5fd' }}
+                />
+              </View>
+
+              <Text style={[styles.label, { color: theme.textSecondary }]}>Nome Completo</Text>
               <TextInput
-                style={styles.modalInputSingle}
+                style={[
+                  styles.modalInputSingle,
+                  { backgroundColor: theme.cardBg, color: theme.text, borderColor: theme.border },
+                ]}
                 value={name}
                 onChangeText={setName}
                 placeholder="Seu nome"
+                placeholderTextColor={theme.textSecondary}
               />
 
-              <Text style={styles.label}>E-mail</Text>
+              <Text style={[styles.label, { color: theme.textSecondary }]}>E-mail</Text>
               <TextInput
-                style={styles.modalInputSingle}
+                style={[
+                  styles.modalInputSingle,
+                  { backgroundColor: theme.cardBg, color: theme.text, borderColor: theme.border },
+                ]}
                 value={email}
                 onChangeText={setEmail}
                 keyboardType="email-address"
                 autoCapitalize="none"
                 placeholder="seuemail@exemplo.com"
+                placeholderTextColor={theme.textSecondary}
               />
 
-              <Text style={styles.label}>Cargo / Função</Text>
+              <Text style={[styles.label, { color: theme.textSecondary }]}>Cargo / Função</Text>
               <TextInput
-                style={styles.modalInputSingle}
+                style={[
+                  styles.modalInputSingle,
+                  { backgroundColor: theme.cardBg, color: theme.text, borderColor: theme.border },
+                ]}
                 value={role}
                 onChangeText={setRole}
                 placeholder="Ex: Técnico de Campo"
+                placeholderTextColor={theme.textSecondary}
               />
 
               <TouchableOpacity style={[styles.primaryBtn, { marginTop: 14 }]} onPress={handleSaveProfile}>

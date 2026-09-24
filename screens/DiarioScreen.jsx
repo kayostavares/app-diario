@@ -20,21 +20,18 @@ import FolderSelectorModal from '../components/FolderSelectorModal';
 
 import { takePhoto, pickImageFromGallery } from '../services/cameraService';
 import { getCurrentLocation } from '../services/locationService';
-import {
-  loadEntries,
-  saveEntries,
-  loadFolders,
-  saveFolders,
-} from '../services/storageService';
+import { loadEntries, saveEntries, loadFolders, saveFolders } from '../services/storageService';
 import { createEntry, updateEntry, toggleEntry, removeEntry } from '../utils/entryUtils';
+import { useTheme } from '../styles/theme';
 import styles from '../styles/styles';
 
 const DiarioScreen = ({ onLogout, onOpenProfile }) => {
+  const { theme } = useTheme();
+
   const [entries, setEntries] = useState([]);
   const [folders, setFolders] = useState([{ id: 'general', name: 'Geral' }]);
   const [selectedFolderFilter, setSelectedFolderFilter] = useState('ALL');
 
-  // Modais
   const [modalVisible, setModalVisible] = useState(false);
   const [folderSelectorVisible, setFolderSelectorVisible] = useState(false);
   const [editingId, setEditingId] = useState(null);
@@ -65,7 +62,6 @@ const DiarioScreen = ({ onLogout, onOpenProfile }) => {
     })();
   }, []);
 
-  // Criar Pasta
   const handleCreateFolder = async (name) => {
     const newFolder = { id: Date.now().toString(), name };
     const updated = [...folders, newFolder];
@@ -105,10 +101,7 @@ const DiarioScreen = ({ onLogout, onOpenProfile }) => {
       `Excluir "${folderName}"?`,
       `Esta pasta contém ${count} registro(s). O que deseja fazer com as anotações que estão dentro dela?`,
       [
-        {
-          text: 'Cancelar',
-          style: 'cancel',
-        },
+        { text: 'Cancelar', style: 'cancel' },
         {
           text: 'Manter registros',
           onPress: async () => {
@@ -123,7 +116,7 @@ const DiarioScreen = ({ onLogout, onOpenProfile }) => {
             await saveEntries(updatedEntries);
 
             setSelectedFolderFilter('ALL');
-            Alert.alert('Concluído', `Pasta removida. As ${count} anotações foram movidas para a pasta Geral.`);
+            Alert.alert('Concluído', `Pasta removida. As anotações foram movidas para a pasta Geral.`);
           },
         },
         {
@@ -139,7 +132,7 @@ const DiarioScreen = ({ onLogout, onOpenProfile }) => {
             await saveEntries(updatedEntries);
 
             setSelectedFolderFilter('ALL');
-            Alert.alert('Concluído', `Pasta e ${count} registro(s) foram apagados permanentemente.`);
+            Alert.alert('Concluído', `Pasta e ${count} registro(s) foram apagados.`);
           },
         },
       ]
@@ -245,28 +238,20 @@ const DiarioScreen = ({ onLogout, onOpenProfile }) => {
   };
 
   const handleRemove = (id) => {
-      Alert.alert(
-        'Excluir Registro',
-        'Tem certeza de que deseja apagar este registro permanentemente?',
-        [
-          {
-            text: 'Cancelar',
-            style: 'cancel',
-          },
-          {
-            text: 'Sim, Excluir',
-            style: 'destructive',
-            onPress: async () => {
-              const updated = removeEntry(entries, id);
-              setEntries(updated);
-              await saveEntries(updated);
-
-              Alert.alert('Registro Excluído', 'A anotação foi removida com sucesso.');
-            },
-          },
-        ]
-      );
-    };
+    Alert.alert('Excluir', 'Deseja apagar este registro permanentemente?', [
+      { text: 'Cancelar', style: 'cancel' },
+      {
+        text: 'Excluir',
+        style: 'destructive',
+        onPress: async () => {
+          const updated = removeEntry(entries, id);
+          setEntries(updated);
+          await saveEntries(updated);
+          Alert.alert('Sucesso', 'Registro excluído.');
+        },
+      },
+    ]);
+  };
 
   const handleOpenMap = (item) => {
     if (!item?.coords) return;
@@ -302,75 +287,82 @@ const DiarioScreen = ({ onLogout, onOpenProfile }) => {
   }, [entries, search, filter, selectedFolderFilter]);
 
   return (
-    <SafeAreaView style={styles.safeArea}>
-      <StatusBar barStyle="dark-content" backgroundColor="#ffffff" translucent={false} />
+    <SafeAreaView style={[styles.safeArea, { backgroundColor: theme.background }]}>
+      <StatusBar barStyle={theme.statusBar} backgroundColor={theme.headerBg} translucent={false} />
 
-      <View style={styles.header}>
+      <View style={[styles.header, { backgroundColor: theme.headerBg, borderBottomColor: theme.border }]}>
         <TouchableOpacity
           style={styles.headerFolderDropdown}
           onPress={() => setFolderSelectorVisible(true)}
           activeOpacity={0.7}
         >
           <View style={{ flexDirection: 'row', alignItems: 'center', gap: 6 }}>
-            <Ionicons name="folder-open" size={20} color="#2f6fed" />
-            <Text style={styles.headerTitle} numberOfLines={1}>
+            <Ionicons name="folder-open" size={20} color={theme.primary} />
+            <Text style={[styles.headerTitle, { color: theme.text }]} numberOfLines={1}>
               {activeFilterName}
             </Text>
-            <Ionicons name="chevron-down" size={16} color="#666" />
+            <Ionicons name="chevron-down" size={16} color={theme.textSecondary} />
           </View>
-          <Text style={styles.headerSubtitle}>
+          <Text style={[styles.headerSubtitle, { color: theme.textSecondary }]}>
             {filteredEntries.length} de {entries.length} registros
           </Text>
         </TouchableOpacity>
 
         <View style={{ flexDirection: 'row', gap: 8 }}>
-          <TouchableOpacity style={styles.iconBtnHeader} onPress={onOpenProfile}>
-            <Ionicons name="person-circle-outline" size={26} color="#2f6fed" />
+          <TouchableOpacity
+            style={[styles.iconBtnHeader, { backgroundColor: theme.cardBg, borderColor: theme.border, borderWidth: 1 }]}
+            onPress={onOpenProfile}
+          >
+            <Ionicons name="person-circle-outline" size={22} color={theme.primary} />
           </TouchableOpacity>
-          <TouchableOpacity style={styles.logoutBtn} onPress={onLogout}>
-            <Ionicons name="log-out-outline" size={22} color="#ff5252" />
+
+          <TouchableOpacity
+            style={[styles.logoutBtn, { backgroundColor: theme.dangerBg }]}
+            onPress={onLogout}
+          >
+            <Ionicons name="log-out-outline" size={20} color={theme.dangerText} />
           </TouchableOpacity>
         </View>
       </View>
 
-      <View style={styles.searchBar}>
-        <Ionicons name="search" size={18} color="#888" style={{ marginRight: 8 }} />
+      <View style={[styles.searchBar, { backgroundColor: theme.cardBg, borderColor: theme.border }]}>
+        <Ionicons name="search" size={18} color={theme.textSecondary} style={{ marginRight: 8 }} />
         <TextInput
           placeholder="Pesquisar..."
           value={search}
           onChangeText={setSearch}
-          style={styles.searchInput}
-          placeholderTextColor="#999"
+          style={[styles.searchInput, { color: theme.text }]}
+          placeholderTextColor={theme.textSecondary}
         />
         {search.length > 0 && (
           <TouchableOpacity onPress={() => setSearch('')}>
-            <Ionicons name="close-circle" size={18} color="#888" />
+            <Ionicons name="close-circle" size={18} color={theme.textSecondary} />
           </TouchableOpacity>
         )}
       </View>
 
       <View style={styles.filterRow}>
         <TouchableOpacity
-          style={[styles.filterChip, filter === 'ALL' && styles.filterChipActive]}
+          style={[styles.filterChip, { backgroundColor: filter === 'ALL' ? theme.primary : theme.chipBg }]}
           onPress={() => setFilter('ALL')}
         >
-          <Text style={[styles.filterText, filter === 'ALL' && styles.filterTextActive]}>
+          <Text style={[styles.filterText, { color: filter === 'ALL' ? '#fff' : theme.chipText }]}>
             Todos
           </Text>
         </TouchableOpacity>
         <TouchableOpacity
-          style={[styles.filterChip, filter === 'PENDING' && styles.filterChipActive]}
+          style={[styles.filterChip, { backgroundColor: filter === 'PENDING' ? theme.primary : theme.chipBg }]}
           onPress={() => setFilter('PENDING')}
         >
-          <Text style={[styles.filterText, filter === 'PENDING' && styles.filterTextActive]}>
+          <Text style={[styles.filterText, { color: filter === 'PENDING' ? '#fff' : theme.chipText }]}>
             Pendentes
           </Text>
         </TouchableOpacity>
         <TouchableOpacity
-          style={[styles.filterChip, filter === 'DONE' && styles.filterChipActive]}
+          style={[styles.filterChip, { backgroundColor: filter === 'DONE' ? theme.primary : theme.chipBg }]}
           onPress={() => setFilter('DONE')}
         >
-          <Text style={[styles.filterText, filter === 'DONE' && styles.filterTextActive]}>
+          <Text style={[styles.filterText, { color: filter === 'DONE' ? '#fff' : theme.chipText }]}>
             Concluídos
           </Text>
         </TouchableOpacity>
@@ -395,8 +387,8 @@ const DiarioScreen = ({ onLogout, onOpenProfile }) => {
         contentContainerStyle={styles.listContent}
         ListEmptyComponent={
           <View style={styles.emptyContainer}>
-            <Ionicons name="folder-open-outline" size={48} color="#ccc" />
-            <Text style={styles.emptyText}>Nenhum registro nesta pasta.</Text>
+            <Ionicons name="folder-open-outline" size={48} color={theme.textSecondary} />
+            <Text style={[styles.emptyText, { color: theme.textSecondary }]}>Nenhum registro nesta pasta.</Text>
           </View>
         }
       />
@@ -447,7 +439,7 @@ const DiarioScreen = ({ onLogout, onOpenProfile }) => {
         </View>
       </Modal>
     </SafeAreaView>
-  );  
+  );
 };
 
 export default DiarioScreen;
