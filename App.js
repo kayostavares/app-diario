@@ -1,5 +1,5 @@
-import React, { useState } from 'react';
-import { View, Alert } from 'react-native';
+import React, { useState, useEffect } from 'react';
+import { View, Alert, BackHandler } from 'react-native';
 
 import LoginScreen from './screens/LoginScreen';
 import RegisterScreen from './screens/RegisterScreen';
@@ -7,6 +7,7 @@ import ForgotPasswordScreen from './screens/ForgotPasswordScreen';
 import DiarioScreen from './screens/DiarioScreen';
 import ProfileScreen from './screens/ProfileScreen';
 import LoadingScreen from './components/LoadingScreen';
+import SwipeBackView from './components/SwipeBackView';
 
 import { ThemeProvider, useTheme } from './styles/theme';
 import { authenticateUser } from './services/authService';
@@ -15,6 +16,45 @@ function MainNavigator() {
   const { theme } = useTheme();
   const [currentScreen, setCurrentScreen] = useState('LOGIN');
   const [isAuthenticating, setIsAuthenticating] = useState(false);
+
+  useEffect(() => {
+    const handleBackButton = () => {
+      if (currentScreen === 'REGISTER' || currentScreen === 'FORGOT') {
+        setCurrentScreen('LOGIN');
+        return true;
+      }
+
+      if (currentScreen === 'PROFILE') {
+        setCurrentScreen('DIARIO');
+        return true;
+      }
+
+      if (currentScreen === 'DIARIO') {
+        Alert.alert(
+          'Sair do Diário',
+          'Deseja realmente encerrar a sessão e sair da sua conta?',
+          [
+            { text: 'Cancelar', style: 'cancel' },
+            {
+              text: 'Sair',
+              style: 'destructive',
+              onPress: () => setCurrentScreen('LOGIN'),
+            },
+          ]
+        );
+        return true;
+      }
+
+      return false;
+    };
+
+    const backHandlerSubscription = BackHandler.addEventListener(
+      'hardwareBackPress',
+      handleBackButton
+    );
+
+    return () => backHandlerSubscription.remove();
+  }, [currentScreen]);
 
   const handleLogin = async () => {
     setIsAuthenticating(true);
@@ -56,22 +96,30 @@ function MainNavigator() {
         switch (currentScreen) {
           case 'REGISTER':
             return (
-              <RegisterScreen
-                onRegister={handleRegisterSuccess}
-                onBack={() => setCurrentScreen('LOGIN')}
-              />
+              <SwipeBackView onBack={() => setCurrentScreen('LOGIN')}>
+                <RegisterScreen
+                  onRegister={handleRegisterSuccess}
+                  onBack={() => setCurrentScreen('LOGIN')}
+                />
+              </SwipeBackView>
             );
 
           case 'FORGOT':
             return (
-              <ForgotPasswordScreen
-                onSendReset={handleForgotPasswordSuccess}
-                onBack={() => setCurrentScreen('LOGIN')}
-              />
+              <SwipeBackView onBack={() => setCurrentScreen('LOGIN')}>
+                <ForgotPasswordScreen
+                  onSendReset={handleForgotPasswordSuccess}
+                  onBack={() => setCurrentScreen('LOGIN')}
+                />
+              </SwipeBackView>
             );
 
           case 'PROFILE':
-            return <ProfileScreen onBack={() => setCurrentScreen('DIARIO')} />;
+            return (
+              <SwipeBackView onBack={() => setCurrentScreen('DIARIO')}>
+                <ProfileScreen onBack={() => setCurrentScreen('DIARIO')} />
+              </SwipeBackView>
+            );
 
           case 'DIARIO':
             return (
