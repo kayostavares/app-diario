@@ -22,13 +22,20 @@ import { useTheme } from '../styles/theme';
 import styles from '../styles/styles';
 
 const PROFILE_KEY = '@diario_app:user_profile';
+const PASSWORD_KEY = '@diario_app:user_password';
 
 const ProfileScreen = ({ onBack }) => {
   const { theme, isDark, toggleTheme } = useTheme();
+
   const [name, setName] = useState('');
   const [email, setEmail] = useState('');
+  const [hasRole, setHasRole] = useState(false);
   const [role, setRole] = useState('');
   const [avatarUri, setAvatarUri] = useState(null);
+
+  const [showPasswordSection, setShowPasswordSection] = useState(false);
+  const [newPassword, setNewPassword] = useState('');
+  const [confirmPassword, setConfirmPassword] = useState('');
 
   useEffect(() => {
     (async () => {
@@ -38,12 +45,14 @@ const ProfileScreen = ({ onBack }) => {
           const data = JSON.parse(saved);
           setName(data.name || '');
           setEmail(data.email || '');
-          setRole(data.role || '');
           setAvatarUri(data.avatarUri || null);
+          if (data.role) {
+            setRole(data.role);
+            setHasRole(true);
+          }
         } else {
           setName('Pesquisador de Campo');
           setEmail('usuario@campo.com');
-          setRole('Técnico / Pesquisador');
         }
       } catch (e) {
         console.log('Erro ao carregar perfil', e);
@@ -76,9 +85,38 @@ const ProfileScreen = ({ onBack }) => {
       return;
     }
 
-    const payload = { name: name.trim(), email: email.trim(), role: role.trim(), avatarUri };
+    const payload = {
+      name: name.trim(),
+      email: email.trim(),
+      role: hasRole ? role.trim() : '',
+      avatarUri,
+    };
     await AsyncStorage.setItem(PROFILE_KEY, JSON.stringify(payload));
     Alert.alert('Sucesso', 'Perfil atualizado com sucesso!');
+  };
+
+  const handleChangePassword = async () => {
+    Keyboard.dismiss();
+    if (!newPassword || !confirmPassword) {
+      Alert.alert('Atenção', 'Preencha os dois campos de senha.');
+      return;
+    }
+
+    if (newPassword.length < 6) {
+      Alert.alert('Atenção', 'A nova senha deve ter no mínimo 6 caracteres.');
+      return;
+    }
+
+    if (newPassword !== confirmPassword) {
+      Alert.alert('Atenção', 'As senhas não coincidem.');
+      return;
+    }
+
+    await AsyncStorage.setItem(PASSWORD_KEY, newPassword);
+    setNewPassword('');
+    setConfirmPassword('');
+    setShowPasswordSection(false);
+    Alert.alert('Sucesso', 'Sua senha foi alterada com sucesso!');
   };
 
   return (
@@ -103,7 +141,7 @@ const ProfileScreen = ({ onBack }) => {
             showsVerticalScrollIndicator={false}
             keyboardShouldPersistTaps="handled"
           >
-            <View style={{ position: 'relative', marginBottom: 24 }}>
+            <View style={{ position: 'relative', marginBottom: 20 }}>
               {avatarUri ? (
                 <Image source={{ uri: avatarUri }} style={styles.profileAvatar} />
               ) : (
@@ -130,7 +168,7 @@ const ProfileScreen = ({ onBack }) => {
                   backgroundColor: theme.cardBg,
                   padding: 14,
                   borderRadius: 12,
-                  marginBottom: 16,
+                  marginBottom: 14,
                   borderWidth: 1,
                   borderColor: theme.border,
                 }}
@@ -173,21 +211,109 @@ const ProfileScreen = ({ onBack }) => {
                 placeholderTextColor={theme.textSecondary}
               />
 
-              <Text style={[styles.label, { color: theme.textSecondary }]}>Cargo / Função</Text>
-              <TextInput
-                style={[
-                  styles.modalInputSingle,
-                  { backgroundColor: theme.cardBg, color: theme.text, borderColor: theme.border },
-                ]}
-                value={role}
-                onChangeText={setRole}
-                placeholder="Ex: Técnico de Campo"
-                placeholderTextColor={theme.textSecondary}
-              />
+              <View
+                style={{
+                  flexDirection: 'row',
+                  justifyContent: 'space-between',
+                  alignItems: 'center',
+                  marginTop: 6,
+                  marginBottom: 8,
+                }}
+              >
+                <Text style={[styles.label, { color: theme.textSecondary, marginBottom: 0 }]}>
+                  Informar Cargo / Ocupação (Opcional)
+                </Text>
+                <Switch
+                  value={hasRole}
+                  onValueChange={(val) => {
+                    setHasRole(val);
+                    if (!val) setRole('');
+                  }}
+                  thumbColor={hasRole ? theme.primary : '#f4f3f4'}
+                  trackColor={{ false: '#767577', true: '#93c5fd' }}
+                />
+              </View>
 
-              <TouchableOpacity style={[styles.primaryBtn, { marginTop: 14 }]} onPress={handleSaveProfile}>
-                <Text style={styles.primaryBtnText}>Salvar Alterações</Text>
+              {hasRole && (
+                <TextInput
+                  style={[
+                    styles.modalInputSingle,
+                    { backgroundColor: theme.cardBg, color: theme.text, borderColor: theme.border },
+                  ]}
+                  value={role}
+                  onChangeText={setRole}
+                  placeholder="Ex: Engenheiro Agrônomo, Pesquisador"
+                  placeholderTextColor={theme.textSecondary}
+                  autoFocus
+                />
+              )}
+
+              <TouchableOpacity style={[styles.primaryBtn, { marginTop: 10 }]} onPress={handleSaveProfile}>
+                <Text style={styles.primaryBtnText}>Salvar Informações</Text>
               </TouchableOpacity>
+
+              <View
+                style={{
+                  backgroundColor: theme.cardBg,
+                  borderRadius: 12,
+                  borderWidth: 1,
+                  borderColor: theme.border,
+                  marginTop: 20,
+                  padding: 14,
+                }}
+              >
+                <TouchableOpacity
+                  style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center' }}
+                  onPress={() => setShowPasswordSection(!showPasswordSection)}
+                >
+                  <View style={{ flexDirection: 'row', alignItems: 'center', gap: 8 }}>
+                    <Ionicons name="lock-closed-outline" size={20} color={theme.primary} />
+                    <Text style={{ fontSize: 15, fontWeight: '600', color: theme.text }}>Alterar Senha</Text>
+                  </View>
+                  <Ionicons
+                    name={showPasswordSection ? 'chevron-up' : 'chevron-down'}
+                    size={20}
+                    color={theme.textSecondary}
+                  />
+                </TouchableOpacity>
+
+                {showPasswordSection && (
+                  <View style={{ marginTop: 14 }}>
+                    <Text style={[styles.label, { color: theme.textSecondary }]}>Nova Senha</Text>
+                    <TextInput
+                      style={[
+                        styles.modalInputSingle,
+                        { backgroundColor: theme.inputBg, color: theme.text, borderColor: theme.border },
+                      ]}
+                      value={newPassword}
+                      onChangeText={setNewPassword}
+                      placeholder="Mínimo 6 caracteres"
+                      placeholderTextColor={theme.textSecondary}
+                      secureTextEntry
+                    />
+
+                    <Text style={[styles.label, { color: theme.textSecondary }]}>Confirmar Nova Senha</Text>
+                    <TextInput
+                      style={[
+                        styles.modalInputSingle,
+                        { backgroundColor: theme.inputBg, color: theme.text, borderColor: theme.border },
+                      ]}
+                      value={confirmPassword}
+                      onChangeText={setConfirmPassword}
+                      placeholder="Repita a nova senha"
+                      placeholderTextColor={theme.textSecondary}
+                      secureTextEntry
+                    />
+
+                    <TouchableOpacity
+                      style={[styles.primaryBtn, { backgroundColor: '#38a169', marginTop: 6 }]}
+                      onPress={handleChangePassword}
+                    >
+                      <Text style={styles.primaryBtnText}>Confirmar Troca de Senha</Text>
+                    </TouchableOpacity>
+                  </View>
+                )}
+              </View>
             </View>
           </ScrollView>
         </TouchableWithoutFeedback>

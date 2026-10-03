@@ -6,7 +6,6 @@ import {
   FlatList,
   TouchableOpacity,
   Alert,
-  Linking,
   Modal,
   Image,
   StatusBar,
@@ -17,6 +16,7 @@ import { Ionicons } from '@expo/vector-icons';
 import EntryForm from '../components/EntryForm';
 import EntryCard from '../components/EntryCard';
 import FolderSelectorModal from '../components/FolderSelectorModal';
+import InternalMapModal from '../components/InternalMapModal';
 
 import { takePhoto, pickImageFromGallery } from '../services/cameraService';
 import { getCurrentLocation } from '../services/locationService';
@@ -45,6 +45,7 @@ const DiarioScreen = ({ onLogout, onOpenProfile }) => {
   const [search, setSearch] = useState('');
   const [filter, setFilter] = useState('ALL');
   const [previewImage, setPreviewImage] = useState(null);
+  const [mapModalItem, setMapModalItem] = useState(null);
 
   useEffect(() => {
     (async () => {
@@ -253,12 +254,6 @@ const DiarioScreen = ({ onLogout, onOpenProfile }) => {
     ]);
   };
 
-  const handleOpenMap = (item) => {
-    if (!item?.coords) return;
-    const { latitude, longitude } = item.coords;
-    Linking.openURL(`https://www.google.com/maps/search/?api=1&query=${latitude},${longitude}`);
-  };
-
   const folderNamesMap = useMemo(() => {
     const map = {};
     folders.forEach((f) => {
@@ -380,7 +375,7 @@ const DiarioScreen = ({ onLogout, onOpenProfile }) => {
             onToggle={handleToggle}
             onEdit={handleOpenEdit}
             onRemove={handleRemove}
-            onOpenMap={handleOpenMap}
+            onOpenMap={(entry) => setMapModalItem(entry)}
             onPreviewPhoto={(uri) => setPreviewImage(uri)}
           />
         )}
@@ -438,6 +433,13 @@ const DiarioScreen = ({ onLogout, onOpenProfile }) => {
           )}
         </View>
       </Modal>
+
+      <InternalMapModal
+        visible={Boolean(mapModalItem)}
+        onClose={() => setMapModalItem(null)}
+        coords={mapModalItem?.coords}
+        title={mapModalItem?.title}
+      />
     </SafeAreaView>
   );
 };
