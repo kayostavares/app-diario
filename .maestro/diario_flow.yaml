@@ -1,0 +1,34 @@
+appId: host.exp.exponent
+---
+- setLocation:
+    latitude: -22.4050
+    longitude: -43.6625
+
+- assertVisible: "Todas as Pastas"
+
+- tapOn: "Todas as Pastas"
+- assertVisible: "Coleções & Pastas"
+- tapOn: "Criar Nova Pasta"
+- inputText:
+    into: "Nome da pasta..."
+    text: "Vassouras - RJ"
+- tapOn:
+    point: "80%,32%"
+- assertVisible: "Vassouras - RJ"
+
+- tapOn:
+    point: "88%,90%"
+- assertVisible: "Novo Registro"
+- inputText:
+    into: "Descreva a anotação, tarefa ou observação..."
+    text: "Teste em Vassouras"
+
+- tapOn: "Cadastrar Registro"
+- assertVisible: "Localização Obrigatória"
+- tapOn: "OK"
+
+- tapOn: "Marcar GPS *"
+- waitForAnimationToEnd
+- tapOn: "Cadastrar Registro"
+
+- assertVisible: "Teste em Vassouras"
