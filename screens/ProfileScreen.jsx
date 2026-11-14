@@ -16,13 +16,11 @@ import {
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { Ionicons } from '@expo/vector-icons';
-import AsyncStorage from '@react-native-async-storage/async-storage';
 import { takePhoto, pickImageFromGallery } from '../services/cameraService';
+import { changePasswordWithFirebase } from '../services/authService';
+import { loadUserProfile, saveUserProfile } from '../services/storageService';
 import { useTheme } from '../styles/theme';
 import styles from '../styles/styles';
-
-const PROFILE_KEY = '@diario_app:user_profile';
-const PASSWORD_KEY = '@diario_app:user_password';
 
 const ProfileScreen = ({ onBack }) => {
   const { theme, isDark, toggleTheme } = useTheme();
@@ -40,9 +38,8 @@ const ProfileScreen = ({ onBack }) => {
   useEffect(() => {
     (async () => {
       try {
-        const saved = await AsyncStorage.getItem(PROFILE_KEY);
-        if (saved) {
-          const data = JSON.parse(saved);
+        const data = await loadUserProfile();
+        if (data) {
           setName(data.name || '');
           setEmail(data.email || '');
           setAvatarUri(data.avatarUri || null);
@@ -50,9 +47,6 @@ const ProfileScreen = ({ onBack }) => {
             setRole(data.role);
             setHasRole(true);
           }
-        } else {
-          setName('Pesquisador de Campo');
-          setEmail('usuario@campo.com');
         }
       } catch (e) {
         console.log('Erro ao carregar perfil', e);
@@ -91,8 +85,8 @@ const ProfileScreen = ({ onBack }) => {
       role: hasRole ? role.trim() : '',
       avatarUri,
     };
-    await AsyncStorage.setItem(PROFILE_KEY, JSON.stringify(payload));
-    Alert.alert('Sucesso', 'Perfil atualizado com sucesso!');
+    await saveUserProfile(payload);
+    Alert.alert('Sucesso', 'Perfil atualizado e sincronizado com a nuvem!');
   };
 
   const handleChangePassword = async () => {
@@ -112,11 +106,19 @@ const ProfileScreen = ({ onBack }) => {
       return;
     }
 
-    await AsyncStorage.setItem(PASSWORD_KEY, newPassword);
-    setNewPassword('');
-    setConfirmPassword('');
-    setShowPasswordSection(false);
-    Alert.alert('Sucesso', 'Sua senha foi alterada com sucesso!');
+    try {
+      await changePasswordWithFirebase(newPassword);
+      setNewPassword('');
+      setConfirmPassword('');
+      setShowPasswordSection(false);
+      Alert.alert('Sucesso', 'Sua senha foi alterada com sucesso!');
+    } catch (error) {
+      if (error.code === 'auth/requires-recent-login') {
+        Alert.alert('Segurança', 'Por segurança, saia e entre na conta novamente antes de trocar a senha.');
+      } else {
+        Alert.alert('Erro', 'Não foi possível alterar a senha no momento.');
+      }
+    }
   };
 
   return (

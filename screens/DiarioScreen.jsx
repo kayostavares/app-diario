@@ -20,7 +20,13 @@ import InternalMapModal from '../components/InternalMapModal';
 
 import { takePhoto, pickImageFromGallery } from '../services/cameraService';
 import { getCurrentLocation } from '../services/locationService';
-import { loadEntries, saveEntries, loadFolders, saveFolders } from '../services/storageService';
+import {
+  loadEntries,
+  saveEntries,
+  loadFolders,
+  saveFolders,
+  deleteEntryFromFirestore,
+} from '../services/storageService';
 import { createEntry, updateEntry, toggleEntry, removeEntry } from '../utils/entryUtils';
 import { useTheme } from '../styles/theme';
 import styles from '../styles/styles';
@@ -128,9 +134,14 @@ const DiarioScreen = ({ onLogout, onOpenProfile }) => {
             setFolders(updatedFolders);
             await saveFolders(updatedFolders);
 
+            const entriesToDelete = entries.filter((e) => (e.folderId || 'general') === folderId);
             const updatedEntries = entries.filter((e) => (e.folderId || 'general') !== folderId);
             setEntries(updatedEntries);
             await saveEntries(updatedEntries);
+
+            for (const entry of entriesToDelete) {
+              await deleteEntryFromFirestore(entry.id);
+            }
 
             setSelectedFolderFilter('ALL');
             Alert.alert('Concluído', `Pasta e ${count} registro(s) foram apagados.`);
@@ -248,6 +259,7 @@ const DiarioScreen = ({ onLogout, onOpenProfile }) => {
           const updated = removeEntry(entries, id);
           setEntries(updated);
           await saveEntries(updated);
+          await deleteEntryFromFirestore(id);
           Alert.alert('Sucesso', 'Registro excluído.');
         },
       },
