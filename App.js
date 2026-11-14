@@ -10,12 +10,37 @@ import LoadingScreen from './components/LoadingScreen';
 import SwipeBackView from './components/SwipeBackView';
 
 import { ThemeProvider, useTheme } from './styles/theme';
-import { authenticateUser } from './services/authService';
+import {
+  authenticateUser,
+  loginWithFirebase,
+  registerWithFirebase,
+  resetPasswordWithFirebase,
+  logoutWithFirebase
+} from './services/authService';
+import { auth } from './services/firebaseConfig';
+import { onAuthStateChanged } from 'firebase/auth';
 
 function MainNavigator() {
   const { theme } = useTheme();
   const [currentScreen, setCurrentScreen] = useState('LOGIN');
-  const [isAuthenticating, setIsAuthenticating] = useState(false);
+  const [isAuthenticating, setIsAuthenticating] = useState(true);
+
+  useEffect(() => {
+    const unsubscribe = onAuthStateChanged(auth, async (user) => {
+      if (user) {
+        const biometricOk = await authenticateUser();
+        if (biometricOk) {
+          setCurrentScreen('DIARIO');
+        } else {
+          setCurrentScreen('LOGIN');
+        }
+      } else {
+        setCurrentScreen('LOGIN');
+      }
+      setIsAuthenticating(false);
+    });
+    return unsubscribe;
+  }, []);
 
   useEffect(() => {
     const handleBackButton = () => {
@@ -38,7 +63,7 @@ function MainNavigator() {
             {
               text: 'Sair',
               style: 'destructive',
-              onPress: () => setCurrentScreen('LOGIN'),
+              onPress: handleLogout,
             },
           ]
         );
@@ -56,34 +81,60 @@ function MainNavigator() {
     return () => backHandlerSubscription.remove();
   }, [currentScreen]);
 
-  const handleLogin = async () => {
+  const handleLogin = async ({ email, password }) => {
     setIsAuthenticating(true);
-    const authenticated = await authenticateUser();
-    setIsAuthenticating(false);
-
-    if (authenticated) {
-      setCurrentScreen('DIARIO');
-    } else {
-      Alert.alert('Autenticação falhou', 'Confirmação biométrica ou PIN não concedida.');
+    try {
+      await loginWithFirebase(email, password);
+    } catch (error) {
+      let msg = 'Erro ao realizar login.';
+      if (
+        error.code === 'auth/invalid-credential' ||
+        error.code === 'auth/user-not-found' ||
+        error.code === 'auth/wrong-password'
+      ) {
+        msg = 'E-mail ou senha incorretos.';
+      } else if (error.code === 'auth/invalid-email') {
+        msg = 'Formato de e-mail inválido.';
+      }
+      Alert.alert('Falha no Login', msg);
+      setIsAuthenticating(false);
     }
   };
 
-  const handleRegisterSuccess = () => {
-    Alert.alert(
-      'Conta Criada!',
-      'Seu cadastro foi realizado com sucesso. Faça login para acessar seu diário de campo.',
-      [
-        {
-          text: 'Fazer Login',
-          onPress: () => setCurrentScreen('LOGIN'),
-        },
-      ]
-    );
+  const handleRegister = async ({ name, email, password }) => {
+    setIsAuthenticating(true);
+    try {
+      await registerWithFirebase(email, password, name);
+      Alert.alert('Conta Criada!', 'Seu cadastro foi realizado com sucesso.');
+    } catch (error) {
+      let msg = 'Não foi possível cadastrar.';
+      if (error.code === 'auth/email-already-in-use') {
+        msg = 'Este e-mail já está sendo utilizado.';
+      } else if (error.code === 'auth/weak-password') {
+        msg = 'A senha deve possuir pelo menos 6 caracteres.';
+      }
+      Alert.alert('Erro no Cadastro', msg);
+      setIsAuthenticating(false);
+    }
   };
 
-  const handleForgotPasswordSuccess = (email) => {
-    Alert.alert('Recuperação Enviada', `Instruções enviadas para ${email}`);
-    setCurrentScreen('LOGIN');
+  const handleForgotPassword = async (email) => {
+    try {
+      await resetPasswordWithFirebase(email);
+      Alert.alert('E-mail Enviado', `Instruções de recuperação foram enviadas para ${email}`);
+      setCurrentScreen('LOGIN');
+    } catch (error) {
+      Alert.alert('Erro', 'Não foi possível enviar o e-mail de recuperação.');
+    }
+  };
+
+  const handleLogout = async () => {
+    try {
+      await logoutWithFirebase();
+      setCurrentScreen('LOGIN');
+    } catch (error) {
+      Alert.alert('Erro', 'Falha ao encerrar a sessão.');
+    }
   };
 
   if (isAuthenticating) {
@@ -98,7 +149,7 @@ function MainNavigator() {
             return (
               <SwipeBackView onBack={() => setCurrentScreen('LOGIN')}>
                 <RegisterScreen
-                  onRegister={handleRegisterSuccess}
+                  onRegister={handleRegister}
                   onBack={() => setCurrentScreen('LOGIN')}
                 />
               </SwipeBackView>
@@ -108,7 +159,7 @@ function MainNavigator() {
             return (
               <SwipeBackView onBack={() => setCurrentScreen('LOGIN')}>
                 <ForgotPasswordScreen
-                  onSendReset={handleForgotPasswordSuccess}
+                  onSendReset={handleForgotPassword}
                   onBack={() => setCurrentScreen('LOGIN')}
                 />
               </SwipeBackView>
@@ -124,7 +175,7 @@ function MainNavigator() {
           case 'DIARIO':
             return (
               <DiarioScreen
-                onLogout={() => setCurrentScreen('LOGIN')}
+                onLogout={handleLogout}
                 onOpenProfile={() => setCurrentScreen('PROFILE')}
               />
             );
