@@ -38,7 +38,7 @@ const InternalMapModal = ({ visible, onClose, coords, title }) => {
             maxZoom: 19,
           }).addTo(map);
           const marker = L.marker([${lat}, ${lng}]).addTo(map);
-          marker.bindPopup("<b>${title || 'Local Marcado'}</b>").openPopup();
+          marker.bindPopup("<b>${(title || 'Local Marcado').replace(/"/g, '&quot;')}</b>").openPopup();
         </script>
       </body>
     </html>
@@ -51,7 +51,13 @@ const InternalMapModal = ({ visible, onClose, coords, title }) => {
 
   return (
     <Modal visible={visible} transparent animationType="slide" onRequestClose={onClose}>
-      <TouchableOpacity style={mapStyles.overlay} activeOpacity={1} onPress={onClose}>
+      <View style={mapStyles.overlay}>
+        <TouchableOpacity
+          style={StyleSheet.absoluteFill}
+          activeOpacity={1}
+          onPress={onClose}
+        />
+
         <View style={[mapStyles.card, { backgroundColor: theme.cardBg, borderColor: theme.border }]}>
           <View style={mapStyles.header}>
             <View style={{ flexDirection: 'row', alignItems: 'center', gap: 8 }}>
@@ -101,7 +107,7 @@ const InternalMapModal = ({ visible, onClose, coords, title }) => {
             </TouchableOpacity>
           </View>
         </View>
-      </TouchableOpacity>
+      </View>
     </Modal>
   );
 };
